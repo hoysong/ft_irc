@@ -11,7 +11,7 @@ CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./include
 #CXXFLAGS = -g -std=c++98 -I./include
 OBJS = $(SRCS:.cpp=.o)
 
-NAME = webserv
+NAME = ircserv
 
 all : $(NAME)
 
