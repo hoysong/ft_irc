@@ -1,5 +1,10 @@
 SRCS = \
-       $(wildcard ./src/*.cpp)
+       ./srcs/main.cpp \
+       $(wildcard ./srcs/client/*.cpp) \
+       $(wildcard ./srcs/clientManager/*.cpp) \
+       $(wildcard ./srcs/epoll/*.cpp) \
+       $(wildcard ./srcs/listen/*.cpp) \
+       $(wildcard ./srcs/ircserver/*.cpp)
 
 GRN = "\e[1;32m[
 END = ]\e[0m"
@@ -7,8 +12,9 @@ END = ]\e[0m"
 MSG = @echo $(GRN)
 
 CXX = c++
-CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./include
-#CXXFLAGS = -g -std=c++98 -I./include
+#CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./includes -fsanitize=address
+#CXXFLAGS = -g -std=c++98 -I./includes -fsanitize=address
+CXXFLAGS = -g -std=c++98 -I./includes
 OBJS = $(SRCS:.cpp=.o)
 
 NAME = ircserv
