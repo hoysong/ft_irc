@@ -232,7 +232,7 @@ static bool trailVldChk(strVect &vect)
 {
 	for(strVect::iterator iter = vect.begin(); iter != vect.end(); iter++)
 	{
-		if ((*iter).empty)
+		if ((*iter).empty())
 			return (false);
 	}
 	return (true);
@@ -257,7 +257,7 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		if (splitTrailing(params[0], servers))
 		{
 			msg.buildErrMsg(ERR_BADCHANMASK,
-					client, );
+					client, "bad channel name");
 			return ;
 		}
 }
