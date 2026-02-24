@@ -1,22 +1,31 @@
 #include "Client.hpp"
 #include <unistd.h> // close().
-#include <sys/socket.h> // recv.
 #include <iostream> // cout cerr.
+#include "StateMachine.hpp"
+#include "MyLibft.hpp"
 
-bool Client::recvBuffer( void )
+void Client::appendBuffer( char *buffer, ssize_t size )
+{
+	m_buffer.append(buffer, size);
+	MyLibft::showBuffer(m_buffer);
+}
+
+bool Client::recvFd( void )
 {
 	std::cout << "\t[Client::recvBuffer()]" << std::endl;
-	char buffer[4096];
+	char buffer[5];
 	ssize_t bytes_read = recv(m_fd, buffer, sizeof(buffer) - 1, 0);
 
-	if (bytes_read <= 0) {
-		// 연결 종료 처리 (기존 코드 유지)
+	if (bytes_read <= 0)
+	{ // 연결 종료 처리 (기존 코드 유지)
+		
 		if (bytes_read == 0)
 			std::cout << "\t\tClient disconnected: " << m_fd << std::endl;
 		else
 			std::cerr << "\t\trecv error: " << m_fd << std::endl;
 		return( false );
 	}
+	appendBuffer(buffer, bytes_read);
 	return ( true );
 };
 
@@ -25,12 +34,90 @@ int Client::getFd( void ) const
 	return (m_fd);
 };
 
+std::string Client::getNickName( void )
+{
+	return (m_nickName);
+}
+
+std::string Client::getUserName( void )
+{
+	return (m_userName);
+}
+
+std::string Client::getRealName( void )
+{
+	return (m_realName);
+}
+
+void Client::assignNickName( const std::string &name )
+{
+	m_nickName = name;
+}
+
+bool Client::isAuthed( void )
+{
+	return (m_authed);
+}
+
+bool Client::isRegistered( void )
+{
+	return (m_registered);
+}
+
+void Client::setAuthed( void )
+{
+	m_authed = true;
+}
+
+void Client::setUserName( const std::string &str )
+{
+	m_userName = str;
+}
+
+void Client::setInvisible( bool flag )
+{
+	m_modInvisible = flag;
+}
+void Client::setWallops( bool flag )
+{
+	m_modWallops = flag;
+}
+
+void Client::setRealName( const std::string &name )
+{
+	m_realName = name;
+}
+
+void Client::setRegistered( void )
+{
+	m_registered = true;
+}
+
+bool Client::popLine( std::string &line )
+{
+	size_t crlfPos = m_buffer.find("\r\n");
+	if ( crlfPos == std::string::npos )
+	{ /* 아직 라인이 완성되지 않음. */
+		return (false);
+	}
+	line = m_buffer.substr(0, crlfPos);
+	m_buffer.erase(0, crlfPos + 2);
+	return (true);
+}
+
 /***************************/
 /* constcurtor/destructor. */
 /***************************/
-Client::Client( int fd ) : m_fd(fd)
+Client::Client( int fd ) :
+	m_fd(fd),
+	m_authed(false),
+	m_registered(false),
+	m_IRCOperaotr(false),
+	m_modInvisible(false),
+	m_modWallops(false),
+	m_nickName("*")
 {
-	std::cout << "\t[Client::Client()]: client constructor called. fd: " << fd << std::endl;
+	std::cout<<"\t[Client::Client()]: client constructor called. fd: " << fd << std::endl;
 };
 Client::~Client( void )
 {

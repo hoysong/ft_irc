@@ -2,6 +2,7 @@
 # define MYLIBFT_HPP
 # include <stdexcept>
 # include <sstream>
+# include <iostream>
 
 class MyLibft
 {
@@ -32,6 +33,28 @@ class MyLibft
 			unsigned char val = static_cast<unsigned char>(c);
 			for (size_t i = 0; i < len; ++i)
 				ptr[i] = val;
+		}
+		static void setLingerZero( int fd )
+		{
+			struct linger ling = {1, 0};
+			setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
+		}
+		static void showBuffer( std::string &str )
+		{
+			std::string::iterator iter = str.begin();
+			std::string::iterator iter_end = str.end();
+
+			while ( iter != iter_end )
+			{
+				if (*iter == '\r')
+					std::cout << "\\r";
+				else if (*iter == '\n')
+					std::cout << "\\n\n";
+				else
+					std::cout << *iter;
+				iter++;
+			}
+			std::cout << std::endl;
 		}
 };
 

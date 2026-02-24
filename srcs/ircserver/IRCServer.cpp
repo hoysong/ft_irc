@@ -1,9 +1,10 @@
 #include "IRCServer.hpp"
 #include <signal.h>
+#include "MyLibft.hpp"
 
-/*******************/
-/* signal handler. */
-/*******************/
+// =========================================================================
+// signal handler.
+// =========================================================================
 
 bool g_running = true;
 
@@ -21,6 +22,10 @@ static void setQuitSignal(void)
 		throw std::runtime_error("[setQuitSignal()]: signal() failed.");
 }
 
+// =========================================================================
+// loop logics.
+// =========================================================================
+
 void IRCServer::acceptLogics( void )
 {
 	std::cout << "[IRCServer::acceptLogics()]" << std::endl;
@@ -31,11 +36,12 @@ void IRCServer::acceptLogics( void )
 		std::cerr << "\tfailed to accept client for unknown reason." << std::endl;
 		return ;
 	}
-	if (m_clientManager.isMaxClient())
-	{ // max client 도달. 연결받기, 즉시 close().
-		std::cerr << "\tmax client detected." << std::endl;
-		close(clientFd);
-	}
+//	if (m_clientManager.isMaxClient())
+//	{ // max client 도달. 연결받기, 즉시 close().
+//		MyLibft::setLingerZero(clientFd);
+//		std::cerr << "\tmax client detected." << std::endl;
+//		close(clientFd);
+//	}
 
 	Client *newClient = m_clientManager.addNewClient( clientFd );
 	if (newClient == NULL)
@@ -48,68 +54,69 @@ void IRCServer::acceptLogics( void )
 		m_clientManager.removeClient(newClient->getFd());
 }
 
+/* 클라이언트 이벤트. */
 void IRCServer::recvClient( Client &refClient )
 {
 	std::cout << "[IRCServer::recvClient()]" << std::endl;
-	if (!refClient.recvBuffer())
-	{
+	if (!refClient.recvFd())
+	{ // client recv() 실패.
 		std::cerr << "\tclient recv() fail." << std::endl;
-		m_epoll.del(refClient.getFd());
-		m_clientManager.removeClient(refClient.getFd());
+		hardDisconnect(refClient);
+		return ;
+	}
+
+	while (true)
+	{
+		std::string line;
+		if (!refClient.popLine(line))
+		{ // line not ready. nothing to do.
+			break;
+		}
+		processLine(refClient, line); // 라인에 따른 적절한 처리.
+		line.clear();
 	}
 }
 
 void IRCServer::eventHandler( struct epoll_event &event )
 {
-    // 1. 에러나 종료 플래그가 있는지 먼저 확인 (우선순위 높음)
-    if (event.events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
-    {
-        // 종료 처리
-        Client *ptr = static_cast<Client *>(event.data.ptr);
-        if (ptr) {
-            m_epoll.del(ptr->getFd());
-            m_clientManager.removeClient(ptr->getFd());
-        }
-        return; // 이미 닫았으니 recv 안 함
-    }
-
-    // 2. 읽기 이벤트 처리
-    if (event.events & EPOLLIN)
-    {
-        if (event.data.ptr == NULL)
-            acceptLogics();
-        else
-            recvClient(*static_cast<Client *>(event.data.ptr));
-    }
+	if (event.events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP))
+	{ // 종료 처리
+		Client *ptr = static_cast<Client *>(event.data.ptr);
+		if (ptr)
+			hardDisconnect(*ptr);
+		return ;
+	}
+	
+	if (event.events & EPOLLIN)
+	{
+		if (event.data.ptr == NULL)
+			acceptLogics();
+		else
+			recvClient(*static_cast<Client *>(event.data.ptr));
+	}
 }
 
-//void IRCServer::eventHandler( struct epoll_event &event )
-//{
-//	if (event.events & EPOLLIN)
-//	{
-//		if (event.data.ptr == NULL) // listenSocket인 상황.
-//			acceptLogics();
-//		else if (event.data.ptr != NULL) // Client인 상황.
-//			recvClient(*static_cast<Client *>(event.data.ptr));
-//	}
-//	else if (
-//			//event.events & (EPOLLHUP | EPOLLERR | EPOLLRDHUP)
-//			event.events & (EPOLLHUP | EPOLLERR)
-//		)
-//	{
-//		if (event.data.ptr != NULL)
-//		{ // Client측 에러로 추정.
-//			Client *ptr
-//				= static_cast<Client *>(event.data.ptr);
-//			m_epoll.del(ptr->getFd());
-//			m_clientManager.removeClient(ptr->getFd());
-//		}
-//	}
-//}
+// =========================================================================
+// disconnect client.
+// =========================================================================
 
-/****************/
-/* server loop. */
-/****************/
+void IRCServer::softDisconnect( Client &client )
+{
+			m_epoll.del(client.getFd());
+			m_clientManager.removeClient(client.getFd());
+}
+void IRCServer::hardDisconnect( Client &client )
+{
+			MyLibft::setLingerZero(client.getFd());
+			m_epoll.del(client.getFd());
+			m_clientManager.removeClient(client.getFd());
+}
+
+// =========================================================================
+// server loop.
+// =========================================================================
+#define CYAN "\033[46m"
+#define NC "\033[0m"
 void IRCServer::serverLoop( void )
 {
 	struct epoll_event events[MAX_EVENTS];
@@ -117,7 +124,10 @@ void IRCServer::serverLoop( void )
 
 	while (g_running)
 	{
-		std::cout << "[IRCServer::serverLoop()]: 새로운 루프입니다." << std::endl;
+		std::cout << CYAN 
+			"[IRCServer::serverLoop()]: 새로운 루프입니다." << 
+			NC <<
+		std::endl;
 		eventCount = m_epoll.wait(events, MAX_EVENTS, -1);
 		for(int i = 0; i < eventCount; i++)
 		{
@@ -137,5 +147,37 @@ IRCServer::IRCServer(std::string ip, int port, std::string passwd) :
 	setQuitSignal();
 	m_epoll.add(m_listenSocket.getFd(), EPOLLIN, NULL);
 	std::cout << "\tListenSocket을 epoll에 등록하였습니다." << std::endl;
-}
 
+	// 1. 등록 및 인증 관련 (Connection Registration)
+	m_commands["PASS"]    = &IRCServer::handlePass;
+	m_commands["NICK"]    = &IRCServer::handleNick;
+	m_commands["USER"]    = &IRCServer::handleUser;
+	m_commands["QUIT"]    = &IRCServer::handleQuit;
+	m_commands["OPER"]    = &IRCServer::handleOper;
+
+	// 2. 메시지 전송 (Message Sending)
+	m_commands["PRIVMSG"] = &IRCServer::handlePrivmsg;
+	m_commands["NOTICE"]  = &IRCServer::handleNotice;
+
+	// 3. 채널 조작 (Channel Operations)
+	m_commands["JOIN"]    = &IRCServer::handleJoin;
+	m_commands["PART"]    = &IRCServer::handlePart;
+	m_commands["TOPIC"]   = &IRCServer::handleTopic;
+	m_commands["NAMES"]   = &IRCServer::handleNames;
+	m_commands["LIST"]    = &IRCServer::handleList;
+	m_commands["INVITE"]  = &IRCServer::handleInvite;
+	m_commands["KICK"]    = &IRCServer::handleKick;
+	m_commands["MODE"]    = &IRCServer::handleMode;
+
+	// 4. 서버 및 유저 정보 (IRCServer Queries & User Info)
+	m_commands["WHO"]     = &IRCServer::handleWho;
+	m_commands["WHOIS"]   = &IRCServer::handleWhois;
+	m_commands["WHOWAS"]  = &IRCServer::handleWhowas;
+	m_commands["PING"]    = &IRCServer::handlePing;
+	m_commands["PONG"]    = &IRCServer::handlePong;
+
+	// 5. 기타 편의/보너스 (Miscellaneous / Optional)
+	m_commands["CAP"]     = &IRCServer::handleCap;     // irssi 접속 대응
+	m_commands["AWAY"]    = &IRCServer::handleAway;
+	m_commands["KILL"]    = &IRCServer::handleKill;    // Oper 전용 강퇴
+}
