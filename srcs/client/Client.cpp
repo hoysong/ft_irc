@@ -49,6 +49,39 @@ std::string Client::getRealName( void )
 	return (m_realName);
 }
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+std::string	getHostFromFd(int fd)
+{
+	struct sockaddr_in	addr;
+	socklen_t			len = sizeof(addr);
+
+	if (getpeername(fd, (struct sockaddr*)&addr, &len) == -1)
+		return "unknown";
+
+	char	buf[INET_ADDRSTRLEN];
+
+	if (!inet_ntop(AF_INET, &addr.sin_addr, buf, sizeof(buf)))
+		return "unknown";
+
+	return std::string(buf);	// 예: "203.0.113.10"
+}
+
+std::string Client::getMsgPrefix( void )
+{
+	std::string host = getHostFromFd(m_fd);
+	std::stringstream ss;
+	ss << ":" << m_nickName << "!" << m_userName << "@" << host;
+	return (ss.str());
+}
+
+//std::string &Client::getRefNickName( void )
+//{
+//	return (m_nickName);
+//}
+
 void Client::assignNickName( const std::string &name )
 {
 	m_nickName = name;

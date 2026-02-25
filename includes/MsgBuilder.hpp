@@ -35,6 +35,9 @@ class MsgBuilder
 				std::string param1,
 				std::string param2,
 				std::string param3);
+		std::string buildSendMsg( Client &client,
+				std::string command,
+				std::string param1);
 };
 
 #endif

@@ -3,6 +3,7 @@
 # include "ListenSocket.hpp"
 # include "EpollManager.hpp"
 # include "ClientManager.hpp"
+# include "ChannelManager.hpp"
 # include "MsgBuilder.hpp"
 # include <string>
 # include <map>
@@ -22,6 +23,7 @@ class IRCServer
 		const std::string m_passwd;
 		ListenSocket m_listenSocket;
 		ClientManager m_clientManager;
+		ChannelManager m_channelManager;
 		EpollManager m_epoll;
 		
 		void eventHandler( struct epoll_event &event );
@@ -31,6 +33,8 @@ class IRCServer
 		   void dispatch( Client &client, t_message &message );
 		void softDisconnect( Client &client ); // 연결차단 전 메시지를 보낸 경우.
 		void hardDisconnect( Client &client ); // 즉시차단 하는 경우.
+						       //
+		void broadcastToChannel( Channel &channel );
 
 		/*************/
 		/* dispatch. */
@@ -53,6 +57,7 @@ class IRCServer
 
 		// 3. 채널 조작 (Channel Operations)
 		void	handleJoin(Client& client, const paramVector& params);
+		void	joinProcess(Client &client, paramVector &servers, paramVector &keys);
 		void	handlePart(Client& client, const paramVector& params);
 		void	handleTopic(Client& client, const paramVector& params);
 		void	handleNames(Client& client, const paramVector& params);

@@ -211,31 +211,60 @@ void    IRCServer::handleNotice(Client& client, const paramVector& params)
 // 3. 채널 조작 (Channel Operations)
 // ==============================================================================
 
-extern bool splitUntilChar( std::string &line, std::string seperator, std::string &result );
+extern bool splitUntilChar(std::string &line, std::string seperator, std::string &result);
 
 static bool splitTrailing(std::string str , strVect &vect)
 {
 	for( std::string result; splitUntilChar(str, ",", result); )
 	{
 		if (result.empty())
-		{
 			return (false);
-		}
 		vect.push_back(str);
 	}
 	if (!str.empty())
 		vect.push_back(str);
+	else if (str.empty())
+		return (false);
 	return (true);
 }
 
-static bool trailVldChk(strVect &vect)
+void IRCServer::broadcastToChannel( Channel &channel )
 {
-	for(strVect::iterator iter = vect.begin(); iter != vect.end(); iter++)
+}
+
+void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &keys)
+{
+	paramVector::iterator servIter = servers.begin();
+	paramVector::iterator keyIter = keys.begin();
+	std::cout << servers.size() << std::endl;
+	std::cout << keys.size() << std::endl;
+	while (servIter != servers.end())
 	{
-		if ((*iter).empty())
-			return (false);
+		if (keyIter != keys.end()) // 키 있음.
+		{
+			if (m_channelManager.addClientToChannel(client, *servIter, *keyIter))
+			{ // 브로드캐스트
+//				Channel *channel;
+//				m_channelManager.getChannel( *servIter, channel);
+//				broadcastToChannel( *channel );
+			}
+			else
+			{ // 실패. err 보내기.
+			}
+		}
+		else // 키 없음.
+		{
+			if (m_channelManager.addClientToChannel(client, *servIter, ""))
+			{ // 브로드캐스트
+			}
+			else
+			{ // 실패. err 보내기.
+			}
+		}
+		servIter++;
+		if (keyIter != keys.end())
+			keyIter++;
 	}
-	return (true);
 }
 
 void    IRCServer::handleJoin(Client& client, const paramVector& params)
@@ -254,12 +283,26 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		return ;
 	}
 	else
-		if (splitTrailing(params[0], servers))
+	{
+		if (!splitTrailing(params[0], servers))
 		{
 			msg.buildErrMsg(ERR_BADCHANMASK,
 					client, "bad channel name");
 			return ;
 		}
+	}
+	if (params.size() > 1)
+	{
+		if (!splitTrailing(params[1], keys))
+		{
+			msg.buildErrMsg(ERR_NEEDMOREPARAMS,
+					client, "JOIN", "key param error");
+			return ;
+		}
+	}
+	/* 키가 채널보다 많으면 빈 값으로 취급할거임. */
+	/* 이미 존재하는 채널이면 생성이 아닌 참여. */
+	joinProcess(client, servers, keys);
 }
 
 void    IRCServer::handlePart(Client& client, const paramVector& params)

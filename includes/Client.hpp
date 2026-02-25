@@ -33,12 +33,15 @@ class Client
 
 		bool isAuthed( void ); // client가 등록되었는지 확인합니다.
 		bool isRegistered( void );
-		void setAuthed( void );
 
 		std::string getNickName( void );
 		std::string getUserName( void );
 		std::string getRealName( void );
+		std::string getMsgPrefix( void );
 
+//		std::string &getRefNickName( void );
+
+		void setAuthed( void );
 		void setRegistered( void );
 
 		void setUserName( const std::string &str );

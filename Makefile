@@ -6,7 +6,8 @@ SRCS = \
        $(wildcard ./srcs/listen/*.cpp) \
        $(wildcard ./srcs/ircserver/*.cpp) \
        $(wildcard ./srcs/stateMachine/*.cpp) \
-       $(wildcard ./srcs/msgBuilder/*.cpp)
+       $(wildcard ./srcs/msgBuilder/*.cpp) \
+       $(wildcard ./srcs/channel/*.cpp)
 
 GRN = "\e[1;32m[
 END = ]\e[0m"

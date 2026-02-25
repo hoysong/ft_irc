@@ -11,15 +11,17 @@ class ClientManager
 	private:
 		//std::vector<Client *> m_clients;
 		std::map<int, Client *> m_fdBased;
-		std::map<std::string, Client *> m_nameBased;
+		std::map<std::string , Client *> m_nameBased;
 	public:
 		Client *addNewClient( int fd );
 		void removeClient( int fd );
 
 		bool isMaxClient( void );
 		bool setClientNickName( int fd, const std::string &name );
-//		bool isNickExists( const std::string &nickName ) const;
+		bool isNickExists( const std::string &nickName ) const;
 
+		bool sendMsg( int fd, const std::string &msg );
+		bool sendMsg( Client &client, const std::string &msg );
 		ClientManager( void );
 		~ClientManager( void );
 };

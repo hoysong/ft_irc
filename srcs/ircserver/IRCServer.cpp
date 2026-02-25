@@ -26,6 +26,22 @@ static void setQuitSignal(void)
 // loop logics.
 // =========================================================================
 
+#include <sys/socket.h>
+#include <sys/time.h>
+
+static bool setSendTimeOut( int fd )
+{
+	struct timeval	timeout;
+	
+	timeout.tv_sec = 3;
+	timeout.tv_usec = 0;
+	
+	if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
+		return (false);
+	return (true);
+}
+
+
 void IRCServer::acceptLogics( void )
 {
 	std::cout << "[IRCServer::acceptLogics()]" << std::endl;

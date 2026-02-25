@@ -1,6 +1,8 @@
 #include "ClientManager.hpp"
+#include "MyLibft.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
+#include <cerrno>
 
 bool ClientManager::isMaxClient( void )
 {
@@ -9,6 +11,7 @@ bool ClientManager::isMaxClient( void )
 	return (true);
 }
 
+/* client에게 닉네임을 최초로 부여하는 함수. */
 bool ClientManager::setClientNickName( int fd, const std::string &name )
 {
 	/* 일단 클라이언트 받아오기. */
@@ -24,14 +27,25 @@ bool ClientManager::setClientNickName( int fd, const std::string &name )
 	return (true); // 이름 부여 성공.
 }
 
-/* changeClientNick() 함수 필요함.*/
+/* changeClientNick() 함수 필요함!!!! */
 
-//bool ClientManager::isNickExists( const std::string &nickName ) const
-//{
-//	if (m_nameBased.find(nickName) == m_nameBased.end())
-//		return (false);
-//	return (true);
-//}
+bool ClientManager::isNickExists( const std::string &nickName ) const
+{
+	if (m_nameBased.find(nickName) == m_nameBased.end())
+		return (false);
+	return (true);
+}
+
+/*sendMsg()는 send 실패를 봐야해서 Client가 존재하는지는 해당 함수 호출부에서 검사해야 함.*/
+bool ClientManager::sendMsg( int fd, const std::string &msg )
+{
+	return (MyLibft::sendMsg(fd, msg));
+}
+bool ClientManager::sendMsg( Client &client, const std::string &msg )
+{
+	return (sendMsg(client.getFd(), msg));
+}
+
 
 /**********************/
 /* add/remove Client. */
@@ -98,6 +112,7 @@ void ClientManager::removeClient( int fd )
 /***************************/
 /* constructor/destructor. */
 /***************************/
+
 ClientManager::ClientManager( void )
 {
 };

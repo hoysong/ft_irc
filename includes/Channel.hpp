@@ -7,16 +7,21 @@
 class Channel
 {
 	private:
-		const std::string m_channelName;
-		std::map<std::string, Client &> m_members;
+		std::string m_channelName;
+		typedef std::map<std::string, Client *> memberMap;
+		memberMap m_members;
+		std::string m_passwd;
 		// need channel modes.
 	public:
-		Channel( const std::string &str );
-		Channel( const std::string &str, const std::string &passwd );
+		Channel( void );
 		~Channel( void );
-		void addMember( Client &client );
-		void removeMember( Client &client );
+
+		bool addMember( Client &client, const std::string &passwd );
+		bool removeMember( Client &client );
 		bool isChannelEmpty( void );
+
+		Channel &setChannelName( const std::string &name );
+		Channel &assignPasswd( const std::string &passwd );
 };
 
 #endif

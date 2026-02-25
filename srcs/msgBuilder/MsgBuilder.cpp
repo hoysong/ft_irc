@@ -92,3 +92,14 @@ std::string MsgBuilder::buildErrMsg( e_ircError errCode,
 	setMessage(param3);
 	return (toString());
 }
+
+std::string buildSendMsg( Client &client,
+		std::string command,
+		std::string param1)
+{
+	std::string msg;
+	msg += client.getMsgPrefix() + " ";
+	msg += command;
+	msg += ": " + param1;
+	return (msg);
+}
