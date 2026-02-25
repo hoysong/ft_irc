@@ -1,5 +1,6 @@
 #include "IRCServer.hpp"
 #include "modeMask.hpp"
+#include "MyLibft.hpp"
 #include <cctype>
 typedef std::vector<std::string> strVect;
 
@@ -230,36 +231,69 @@ static bool splitTrailing(std::string str , strVect &vect)
 
 void IRCServer::broadcastToChannel( Channel &channel )
 {
+	std::cout << "hihihihihih" << std::endl;
+	std::map<std::string, Client *> members = channel.getChannelMembers();
+	channel.isChannelEmpty();
+	for(std::map<std::string, Client *>::iterator iter = members.begin(); iter != members.end(); iter++)
+	{
+		Client &client = *(iter->second);
+		std::cout << "\tsend msg to " << client.getNickName() << std::endl;
+		if (MyLibft::sendMsg(iter->second->getFd(), "HELLO!\r\n"))
+			hardDisconnect(*(iter->second));
+	}
 }
 
 void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &keys)
 {
 	paramVector::iterator servIter = servers.begin();
 	paramVector::iterator keyIter = keys.begin();
+	MsgBuilder msg;
+
 	std::cout << servers.size() << std::endl;
 	std::cout << keys.size() << std::endl;
+
 	while (servIter != servers.end())
 	{
-		if (keyIter != keys.end()) // 키 있음.
-		{
-			if (m_channelManager.addClientToChannel(client, *servIter, *keyIter))
-			{ // 브로드캐스트
-//				Channel *channel;
-//				m_channelManager.getChannel( *servIter, channel);
-//				broadcastToChannel( *channel );
+		Channel *channel;
+		if (m_channelManager.getChannel( *servIter, channel ))
+		{ // 서버 찾음
+			if (!channel->findMember( client ))
+			{ // 멤버 못찾음 추가요망.
+				if (!channel->getPasswd().empty())
+				{ // 패스워드 있음.
+					if (keyIter == keys.end() || *keyIter != channel->getPasswd())
+					{ // 패스워드 불일치.
+						MyLibft::sendMsg(client.getFd(),
+								msg.buildErrMsg(ERR_BADCHANNELKEY, client,
+								*servIter, "Cannot join channel (+k) bad key")
+								);
+						msg.clear();
+					}
+					/* 피곤해서 이부분 당장 Continue로 했음.
+					 * 서버 찾음 부분부터 통째로 함수로 나눔 될 듯.
+					 */
+					servIter++;
+					if (keyIter != keys.end())
+						keyIter++;
+					continue ;
+				}
+				// 패스워드 없음. 채널에 그냥 추가.
+				m_channelManager.addClientToChannel(client, *servIter);
+				MyLibft::sendMsg(client.getFd(),
+						msg.buildSendMsg(client, "JOIN", *servIter) + "\r\n");
 			}
-			else
-			{ // 실패. err 보내기.
-			}
+			// 멤버 찾음 -> 무시됨.
 		}
-		else // 키 없음.
-		{
-			if (m_channelManager.addClientToChannel(client, *servIter, ""))
-			{ // 브로드캐스트
+		else
+		{ // 서버 없음.
+			m_channelManager.addClientToChannel(client, *servIter);
+			if (keyIter != keys.end())
+			{
+				m_channelManager.getChannel( *servIter, channel );
+				channel->assignPasswd( *keyIter );
 			}
-			else
-			{ // 실패. err 보내기.
-			}
+			MyLibft::sendMsg(client.getFd(), msg.buildSendMsg(client, "JOIN", *servIter) + "\r\n");
+			// 성공 브로드캐스트 필요.
 		}
 		servIter++;
 		if (keyIter != keys.end())

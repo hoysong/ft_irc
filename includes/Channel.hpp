@@ -15,10 +15,15 @@ class Channel
 	public:
 		Channel( void );
 		~Channel( void );
+		Channel(const Channel &other);
 
-		bool addMember( Client &client, const std::string &passwd );
+		bool addMember( Client &client );
 		bool removeMember( Client &client );
+		bool findMember( Client &client );
 		bool isChannelEmpty( void );
+
+		std::string getPasswd( void );
+		memberMap &getChannelMembers( void );
 
 		Channel &setChannelName( const std::string &name );
 		Channel &assignPasswd( const std::string &passwd );

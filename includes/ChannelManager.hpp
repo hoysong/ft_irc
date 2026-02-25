@@ -13,12 +13,14 @@ class ChannelManager
 	public:
 		bool addClientToChannel(
 				Client &client,
-				const std::string &channelName,
-				const std::string &passwd);
+				const std::string &channelName);
 		bool removeClientFromChannel(
 				Client &client,
 				const std::string &channelName);
-		bool getChannel( const std::string &name, Channel *channel );
+		bool getChannel( const std::string &name, Channel *&channel );
+
+		ChannelManager( void );
+		~ChannelManager( void );
 };
 
 #endif

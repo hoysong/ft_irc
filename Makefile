@@ -27,6 +27,7 @@ all : $(NAME)
 $(NAME) : $(OBJS)
 	$(MSG)making $(NAME)📂$(END)
 	$(CXX) -fsanitize=address -o $(NAME) $(OBJS)
+#	$(CXX) -o $(NAME) $(OBJS)
 	$(MSG)make done✔$(END)
 
 clean :

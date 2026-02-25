@@ -93,7 +93,7 @@ std::string MsgBuilder::buildErrMsg( e_ircError errCode,
 	return (toString());
 }
 
-std::string buildSendMsg( Client &client,
+std::string MsgBuilder::buildSendMsg( Client &client,
 		std::string command,
 		std::string param1)
 {

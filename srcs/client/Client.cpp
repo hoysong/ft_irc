@@ -66,7 +66,7 @@ std::string	getHostFromFd(int fd)
 	if (!inet_ntop(AF_INET, &addr.sin_addr, buf, sizeof(buf)))
 		return "unknown";
 
-	return std::string(buf);	// 예: "203.0.113.10"
+	return std::string(buf); // ip같은거 203.0.113.10
 }
 
 std::string Client::getMsgPrefix( void )
