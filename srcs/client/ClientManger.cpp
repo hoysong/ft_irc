@@ -27,6 +27,28 @@ bool ClientManager::setClientNickName( int fd, const std::string &name )
 	return (true); // 이름 부여 성공.
 }
 
+bool ClientManager::setClientNickName( Client &client, const std::string &name )
+{
+	std::map<int, Client *>::iterator fdIter = m_fdBased.find(client.getFd());
+	if (fdIter == m_fdBased.end())
+		throw(std::runtime_error("[ClientManager::setClientNickName]: client not found."));
+
+	std::map<std::string, Client *>::iterator nameIter = m_nameBased.find(name);
+	if (nameIter != m_nameBased.end())
+		return (false); // 이미 존재하는 이름입니다.
+
+	/*m_nameBased에 이미 해당 클라이언트가 있는지?*/
+	nameIter = m_nameBased.find(client.getNickName());
+	if (nameIter != m_nameBased.end())
+	{ // 이미 이름기반 map에 존재함.
+		m_nameBased.erase(nameIter);
+	}
+	client.assignNickName(name);
+	m_nameBased[name] = &client;
+
+	return (true); // 이름 부여 성공.
+}
+
 /* changeClientNick() 함수 필요함!!!! */
 
 bool ClientManager::isNickExists( const std::string &nickName ) const

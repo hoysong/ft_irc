@@ -1,7 +1,7 @@
 #include "Client.hpp"
+#include "Channel.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
-#include "StateMachine.hpp"
 #include "MyLibft.hpp"
 
 void Client::appendBuffer( char *buffer, ssize_t size )
@@ -53,12 +53,12 @@ std::string Client::getRealName( void )
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-std::string	getHostFromFd(int fd)
+std::string	Client::getHost(void)
 {
 	struct sockaddr_in	addr;
 	socklen_t			len = sizeof(addr);
 
-	if (getpeername(fd, (struct sockaddr*)&addr, &len) == -1)
+	if (getpeername(m_fd, (struct sockaddr*)&addr, &len) == -1)
 		return "unknown";
 
 	char	buf[INET_ADDRSTRLEN];
@@ -71,10 +71,15 @@ std::string	getHostFromFd(int fd)
 
 std::string Client::getMsgPrefix( void )
 {
-	std::string host = getHostFromFd(m_fd);
+	std::string host = getHost();
 	std::stringstream ss;
 	ss << ":" << m_nickName << "!" << m_userName << "@" << host;
 	return (ss.str());
+}
+
+std::map<std::string, Channel *> Client::getJoinedChannel( void )
+{
+	return (m_channels);
 }
 
 //std::string &Client::getRefNickName( void )
@@ -124,6 +129,20 @@ void Client::setRealName( const std::string &name )
 void Client::setRegistered( void )
 {
 	m_registered = true;
+}
+
+void Client::addJoinedChannel( Channel &channel )
+{
+	m_channels[channel.getChannelName()] = &channel;
+}
+
+bool Client::removeJoinedChannel( Channel &channel )
+{
+	std::map<std::string, Channel *>::iterator iter = m_channels.find(channel.getChannelName());
+	if (iter == m_channels.end())
+		return (false); // 입장하지 않았음.
+	m_channels.erase(iter);
+	return (true);
 }
 
 bool Client::popLine( std::string &line )

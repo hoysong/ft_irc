@@ -80,13 +80,14 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	}
 	if ( client.getNickName() == params[0] )
 		return ; // 이미 동일하니 무시하기.
-	if ( !m_clientManager.setClientNickName(client.getFd(), params[0]) )
+	if ( !m_clientManager.setClientNickName(client, params[0]) )
 	{
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_NICKNAMEINUSE, client, params[0], "Nickname is already in use"));
 		return ;
 	}
 	/* 변경 성공! */
 	// client가 속한 채널에 대해 브로드캐스트 로직.
+	nickChangeBroadcastToChannels(client, params[0]);
 	if (client.getUserName().size()
 		&& client.isAuthed()
 		&& client.getNickName() != "*"

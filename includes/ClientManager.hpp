@@ -18,6 +18,7 @@ class ClientManager
 
 		bool isMaxClient( void );
 		bool setClientNickName( int fd, const std::string &name );
+		bool setClientNickName( Client &client, const std::string &name );
 		bool isNickExists( const std::string &nickName ) const;
 
 		bool sendMsg( int fd, const std::string &msg );

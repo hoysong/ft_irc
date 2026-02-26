@@ -1,9 +1,11 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
+# include <sys/socket.h> // recv(), ssize_t.
 # include <vector>
 # include <string>
-# include <sys/socket.h> // recv(), ssize_t.
-# include "StateMachine.hpp"
+# include <map>
+
+class Channel;
 
 class Client
 {
@@ -11,6 +13,7 @@ class Client
 		const int m_fd;
 		std::string m_buffer;
 		void appendBuffer( char *buffer, ssize_t size );
+		std::map<std::string, Channel *> m_channels;
 
 		bool m_authed;
 		bool m_registered;
@@ -34,12 +37,12 @@ class Client
 		bool isAuthed( void ); // client가 등록되었는지 확인합니다.
 		bool isRegistered( void );
 
+		std::string getHost( void );
 		std::string getNickName( void );
 		std::string getUserName( void );
 		std::string getRealName( void );
 		std::string getMsgPrefix( void );
-
-//		std::string &getRefNickName( void );
+		std::map<std::string, Channel *> getJoinedChannel( void );
 
 		void setAuthed( void );
 		void setRegistered( void );
@@ -48,6 +51,8 @@ class Client
 		void setInvisible( bool flag );
 		void setWallops( bool flag );
 		void setRealName( const std::string &name );
+		void addJoinedChannel( Channel &channel );
+		bool removeJoinedChannel( Channel &channel );
 };
 
 #endif

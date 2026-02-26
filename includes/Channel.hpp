@@ -4,6 +4,8 @@
 # include <map>
 # include <string>
 
+class Client;
+
 class Channel
 {
 	private:

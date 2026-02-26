@@ -37,6 +37,8 @@ class IRCServer
 						       //
 		void msgSender( Client &client, const std::string &msg );
 		void welcomeBroadcast ( Client &client, Channel &channel );
+		void nickChangeBroadcast(Client &client, Channel &channel, const std::string &oldNick);
+		void nickChangeBroadcastToChannels( Client &client, const std::string  &oldNick);
 		void sendNotEnoughParam( Client &client, const std::string &cmd );
 
 		/*************/

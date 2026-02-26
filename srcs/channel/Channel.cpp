@@ -1,4 +1,5 @@
 #include "Channel.hpp"
+#include "Client.hpp"
 #include <iostream>
 
 bool Channel::addMember( Client &client )
@@ -10,6 +11,7 @@ bool Channel::addMember( Client &client )
 		return (false); // 이미 있음.
 	}
 	m_members[client.getNickName()] = &client;
+	client.addJoinedChannel(*this);
 	std::cout << "success to add member to channel " << m_channelName << std::endl;
 	return (true);
 }
@@ -18,6 +20,7 @@ bool Channel::removeMember( Client &client )
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter == m_members.end())
 		return (false); // 이미 없음.
+	iter->second->removeJoinedChannel(*this);
 	m_members.erase(iter);
 	return (true);
 }
