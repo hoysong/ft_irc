@@ -23,6 +23,7 @@ class Channel
 		bool isChannelEmpty( void );
 
 		std::string getPasswd( void );
+		std::string getChannelName( void );
 		memberMap &getChannelMembers( void );
 
 		Channel &setChannelName( const std::string &name );

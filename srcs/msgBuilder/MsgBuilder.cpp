@@ -1,11 +1,6 @@
 #include "MsgBuilder.hpp"
 #include <iostream>
 
-//MsgBuilder &MsgBuilder::setServerName( const std::string &serverName )
-//{
-//	m_serverName = serverName;
-//	return (*this);
-//}
 MsgBuilder &MsgBuilder::setErrno( int errCode )
 {
 	m_errno = errCode;
@@ -52,32 +47,36 @@ std::string MsgBuilder::toString( void ) const
 
 void MsgBuilder::clear(void)
 {
-//	m_serverName.clear();
-	m_errno = -1;
-	m_clientName.clear();
-	m_params.clear();
-	m_msg.clear();
+	MsgBuilder msg;
+	msg.m_errno = -1;
+	msg.m_clientName.clear();
+	msg.m_params.clear();
+	msg.m_msg.clear();
 }
 
 std::string MsgBuilder::buildErrMsg( e_ircError errCode,
 		Client &client,
 		std::string param )
 {
-	setErrno(errCode);
-	setClientName(client.getNickName());
-	setMessage(param);
-	return (toString());
+	MsgBuilder msg;
+	msg.clear();
+	msg.setErrno(errCode);
+	msg.setClientName(client.getNickName());
+	msg.setMessage(param);
+	return (msg.toString());
 }
 std::string MsgBuilder::buildErrMsg( e_ircError errCode,
 		Client &client,
 		std::string param1,
 		std::string param2)
 {
-	setErrno(errCode);
-	setClientName(client.getNickName());
-	addParam(param1);
-	setMessage(param2);
-	return (toString());
+	MsgBuilder msg;
+	msg.clear();
+	msg.setErrno(errCode);
+	msg.setClientName(client.getNickName());
+	msg.addParam(param1);
+	msg.setMessage(param2);
+	return (msg.toString());
 }
 std::string MsgBuilder::buildErrMsg( e_ircError errCode,
 		Client &client,
@@ -85,21 +84,31 @@ std::string MsgBuilder::buildErrMsg( e_ircError errCode,
 		std::string param2,
 		std::string param3)
 {
-	setErrno(errCode);
-	setClientName(client.getNickName());
-	addParam(param1);
-	addParam(param2);
-	setMessage(param3);
-	return (toString());
+	MsgBuilder msg;
+	msg.clear();
+	msg.setErrno(errCode);
+	msg.setClientName(client.getNickName());
+	msg.addParam(param1);
+	msg.addParam(param2);
+	msg.setMessage(param3);
+	return (msg.toString());
 }
 
 std::string MsgBuilder::buildSendMsg( Client &client,
-		std::string command,
-		std::string param1)
+		const std::string &command,
+		const std::string &param1)
 {
 	std::string msg;
 	msg += client.getMsgPrefix() + " ";
 	msg += command;
 	msg += ": " + param1;
 	return (msg);
+}
+
+std::string MsgBuilder::notEnoughParam(Client &client, const std::string &command)
+{
+	return (buildErrMsg(ERR_NEEDMOREPARAMS, client, command, "Not enough parameters"));
+}
+MsgBuilder::MsgBuilder(void)
+{
 }

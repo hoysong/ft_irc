@@ -5,6 +5,7 @@
 # include "ClientManager.hpp"
 # include "ChannelManager.hpp"
 # include "MsgBuilder.hpp"
+# include "MyLibft.hpp"
 # include <string>
 # include <map>
 
@@ -34,7 +35,9 @@ class IRCServer
 		void softDisconnect( Client &client ); // 연결차단 전 메시지를 보낸 경우.
 		void hardDisconnect( Client &client ); // 즉시차단 하는 경우.
 						       //
-		void broadcastToChannel( Channel &channel );
+		void msgSender( Client &client, const std::string &msg );
+		void welcomeBroadcast ( Client &client, Channel &channel );
+		void sendNotEnoughParam( Client &client, const std::string &cmd );
 
 		/*************/
 		/* dispatch. */
@@ -57,6 +60,13 @@ class IRCServer
 
 		// 3. 채널 조작 (Channel Operations)
 		void	handleJoin(Client& client, const paramVector& params);
+		void	aboutExistChannel(Client &client,
+				Channel &channel,
+				std::vector<std::string> &servers,
+				std::vector<std::string> &keys,
+				std::vector<std::string>::iterator &servIter,
+				std::vector<std::string>::iterator &keyIter
+				);
 		void	joinProcess(Client &client, paramVector &servers, paramVector &keys);
 		void	handlePart(Client& client, const paramVector& params);
 		void	handleTopic(Client& client, const paramVector& params);

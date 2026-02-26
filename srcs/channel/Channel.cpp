@@ -59,6 +59,11 @@ std::map<std::string, Client *> &Channel::getChannelMembers( void )
 	return (m_members);
 }
 
+std::string Channel::getChannelName( void )
+{
+	return (m_channelName);
+}
+
 // ======================================================================
 // constructor/destructor.
 // ======================================================================
