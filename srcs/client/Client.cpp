@@ -176,3 +176,8 @@ Client::~Client( void )
 	std::cout << "\t[Client::~Client()] fd: " << m_fd << std::endl;
 	close(m_fd);
 };
+
+bool Client::operator < (const Client &ref ) const
+{
+	return (this->m_fd < ref.m_fd);
+}

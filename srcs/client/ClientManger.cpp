@@ -1,5 +1,7 @@
 #include "ClientManager.hpp"
+#include "Channel.hpp"
 #include "MyLibft.hpp"
+#include "IRCServer.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include <cerrno>
@@ -104,7 +106,7 @@ Client *ClientManager::addNewClient( int fd )
 	return (newClient);
 };
 
-void ClientManager::removeClient( int fd )
+void ClientManager::removeClient( int fd, const std::string &msg, IRCServer &server )
 {
 	std::cout << "[ClientManager::removeClient()]" << std::endl;
 
@@ -113,7 +115,15 @@ void ClientManager::removeClient( int fd )
 
 	std::string nameBuff;
 
-	/* delete from fdBased map first. */
+	/* disconnect from Channel. */
+	Client &client = *(iter->second);
+	std::map<std::string, Channel *> joined = client.getJoinedChannel();
+	for(std::map<std::string, Channel *>::iterator iter = joined.begin(); iter != joined.end(); iter++)
+	{
+		iter->second->removeMember(client, msg, server);
+	}
+
+	/* delete from fdBased map. */
 	if (iter == m_fdBased.end())
 		return ;
 	else

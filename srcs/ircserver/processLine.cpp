@@ -99,15 +99,15 @@ void IRCServer::dispatch( Client &client, t_message &message )
 	}
 
 	/*테스트 하는동안 주석처리.*/
-//	if (!client.isRegistered()
-//		&& message.command != "PASS"
-//		&& message.command != "USER"
-//		&& message.command != "NICK"
-//		)
-//	{
-//		msgSender(client, MsgBuilder::buildErrMsg(ERR_NOTREGISTERED, client, "You have not registered yet");
-//		return ;
-//	}
+	if (!client.isRegistered()
+		&& message.command != "PASS"
+		&& message.command != "USER"
+		&& message.command != "NICK"
+		)
+	{
+		msgSender(client, MsgBuilder::buildErrMsg(ERR_NOTREGISTERED, client, "You have not registered yet"));
+		return ;
+	}
 	/* 이제 command에 따른 적절한 dispatch. */
 	std::map<std::string, commandHandler>::iterator \
 		iter = m_commands.find(message.command);

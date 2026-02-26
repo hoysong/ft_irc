@@ -101,7 +101,7 @@ std::string MsgBuilder::buildSendMsg( Client &client,
 	std::string msg;
 	msg += client.getMsgPrefix() + " ";
 	msg += command;
-	msg += ": " + param1;
+	msg += " :" + param1;
 	return (msg);
 }
 

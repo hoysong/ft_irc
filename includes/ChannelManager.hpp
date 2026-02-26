@@ -4,6 +4,8 @@
 # include <map>
 # include <string>
 
+class IRCServer;
+
 class ChannelManager
 {
 	private:
@@ -13,10 +15,14 @@ class ChannelManager
 	public:
 		bool addClientToChannel(
 				Client &client,
-				const std::string &channelName);
-		bool removeClientFromChannel(
-				Client &client,
-				const std::string &channelName);
+				const std::string &channelName,
+				const std::string &passwd,
+				IRCServer &server);
+//		bool removeClientFromChannel(
+//				Client &client,
+//				const std::string &msg,
+//				const std::string &channelName,
+//				IRCServer &server);
 		bool getChannel( const std::string &name, Channel *&channel );
 
 		ChannelManager( void );

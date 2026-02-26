@@ -1,8 +1,33 @@
 #include "Channel.hpp"
+#include "IRCServer.hpp"
 #include "Client.hpp"
 #include <iostream>
 
-bool Channel::addMember( Client &client )
+void IRCServer::welcomeBroadcast ( Client &client, Channel &channel )
+{
+	std::map<std::string, Client *> members = channel.getChannelMembers();
+	for (std::map<std::string, Client *>::iterator iter = members.begin(); iter != members.end(); iter++)
+	{
+		msgSender( *(iter->second),
+				MsgBuilder::buildSendMsg(client, "JOIN", channel.getChannelName())
+				);
+	}
+}
+
+void IRCServer::quitBroadcast( Client &client, Channel &channel , const std::string &msg)
+{
+	std::map<std::string, Client *> members = channel.getChannelMembers();
+	std::string buff = msg;
+	if (buff.empty())
+		buff = "Connection closed";
+	for (std::map<std::string, Client *>::iterator iter = members.begin(); iter != members.end(); iter++)
+	{
+		msgSender( *(iter->second),
+				":" + client.getNickName() +"!" + client.getUserName() + "@" + client.getHost() + " QUIT :" + buff );
+	}
+}
+
+bool Channel::addMember( Client &client, const std::string &passwd, IRCServer &server)
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter != m_members.end())
@@ -10,18 +35,45 @@ bool Channel::addMember( Client &client )
 		std::cout << "failed to add member to channel " << m_channelName << std::endl;
 		return (false); // 이미 있음.
 	}
+	if (passwd != m_passwd)
+	{
+		server.msgSender(client, \
+			MsgBuilder::buildErrMsg(ERR_BADCHANNELKEY, client, m_channelName, \
+				"Cannot join channel (+k) bad key"));
+		return (false);
+	}
 	m_members[client.getNickName()] = &client;
 	client.addJoinedChannel(*this);
+	server.welcomeBroadcast(client, *this);
 	std::cout << "success to add member to channel " << m_channelName << std::endl;
 	return (true);
 }
-bool Channel::removeMember( Client &client )
+bool Channel::removeMember( Client &client, const std::string &msg, IRCServer &server)
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter == m_members.end())
 		return (false); // 이미 없음.
-	iter->second->removeJoinedChannel(*this);
-	m_members.erase(iter);
+	server.quitBroadcast(client, *this, msg); // 퇴장 브로드캐스트.
+	iter->second->removeJoinedChannel(*this); // 유저 객체에서 채널목록 삭제.
+	m_members.erase(iter); // 채널측 유저목록 삭제.
+	removeChannelOper(client); // 오퍼라면 삭제.
+	return (true);
+}
+
+bool Channel::addChannelOper( Client &client)
+{
+	std::set<Client *>::iterator iter = m_opers.find(&client);
+	if (iter != m_opers.end())
+		return (false);
+	m_opers.insert(&client);
+	return (true);
+}
+bool Channel::removeChannelOper( Client &client)
+{
+	std::set<Client *>::iterator iter = m_opers.find(&client);
+	if (iter == m_opers.end())
+		return (false); // 이미 없음.
+	m_opers.erase(&client);
 	return (true);
 }
 
@@ -36,6 +88,13 @@ bool Channel::isChannelEmpty( void )
 {
 	std::cout << "\t[Channel::isChannelEmpty()]: size is " << m_members.size() << std::endl;
 	return (m_members.empty());
+}
+bool Channel::isChannelOper( Client &client )
+{
+	std::set<Client *>::iterator iter = m_opers.find(&client);
+	if (iter == m_opers.end())
+		return (false);
+	return (true);
 }
 
 Channel &Channel::setChannelName( const std::string &name )
@@ -71,7 +130,11 @@ std::string Channel::getChannelName( void )
 // constructor/destructor.
 // ======================================================================
 
-Channel::Channel( void ) : m_passwd("")
+Channel::Channel( void ) :
+	m_passwd(""),
+	m_inviteOnly(false),
+	m_topicOpOnly(false),
+	m_maxMembers(-1)
 {
 	std::cout << "\t[Channel::Channel()]: " << this << std::endl;
 }
@@ -79,8 +142,4 @@ Channel::Channel( void ) : m_passwd("")
 Channel::~Channel( void )
 {
 	std::cout << "\t[Channel::~Channel()]: " << this << ":" << m_channelName + ":" + m_passwd << std::endl;
-}
-Channel::Channel(const Channel &other)
-{
-	std::cout << "\t[Channel::Channel(copy)]: this=" << this << " from=" << &other << std::endl;
 }

@@ -6,6 +6,8 @@
 
 # define MAX_CLIENT 1000
 
+class IRCServer;
+
 class ClientManager
 {
 	private:
@@ -14,7 +16,7 @@ class ClientManager
 		std::map<std::string , Client *> m_nameBased;
 	public:
 		Client *addNewClient( int fd );
-		void removeClient( int fd );
+		void removeClient( int fd, const std::string &msg, IRCServer &server );
 
 		bool isMaxClient( void );
 		bool setClientNickName( int fd, const std::string &name );

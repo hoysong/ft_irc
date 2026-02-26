@@ -21,6 +21,8 @@ typedef struct s_message
 class IRCServer
 {
 	private:
+		std::string m_startStamp;
+		std::string m_serverName;
 		const std::string m_passwd;
 		ListenSocket m_listenSocket;
 		ClientManager m_clientManager;
@@ -32,13 +34,16 @@ class IRCServer
 		 void recvClient( Client &ref );
 		  void processLine( Client &client, std::string &line);
 		   void dispatch( Client &client, t_message &message );
-		void softDisconnect( Client &client ); // 연결차단 전 메시지를 보낸 경우.
-		void hardDisconnect( Client &client ); // 즉시차단 하는 경우.
-						       //
-		void msgSender( Client &client, const std::string &msg );
-		void welcomeBroadcast ( Client &client, Channel &channel );
+
+		void softDisconnect( Client &client, const std::string &msg ); // 연결차단 전 메시지를 보낸 경우.
+		void hardDisconnect( Client &client, const std::string &msg ); // 즉시차단 하는 경우.
+
+		void welcomeMsg( Client &client );
+		/* 단독호출 금지. nickChangeBroadcastToChannels()을 대신 사용.*/
 		void nickChangeBroadcast(Client &client, Channel &channel, const std::string &oldNick);
 		void nickChangeBroadcastToChannels( Client &client, const std::string  &oldNick);
+		/* 단독호출 금지. quitBroadcastToChannels()을 대신 사용.*/
+		void quitBroadcastToChannels( Client &client, const std::string &msg);
 		void sendNotEnoughParam( Client &client, const std::string &cmd );
 
 		/*************/
@@ -62,13 +67,13 @@ class IRCServer
 
 		// 3. 채널 조작 (Channel Operations)
 		void	handleJoin(Client& client, const paramVector& params);
-		void	aboutExistChannel(Client &client,
-				Channel &channel,
-				std::vector<std::string> &servers,
-				std::vector<std::string> &keys,
-				std::vector<std::string>::iterator &servIter,
-				std::vector<std::string>::iterator &keyIter
-				);
+//		void	aboutExistChannel(Client &client,
+//				Channel &channel,
+//				std::vector<std::string> &servers,
+//				std::vector<std::string> &keys,
+//				std::vector<std::string>::iterator &servIter,
+//				std::vector<std::string>::iterator &keyIter
+//				);
 		void	joinProcess(Client &client, paramVector &servers, paramVector &keys);
 		void	handlePart(Client& client, const paramVector& params);
 		void	handleTopic(Client& client, const paramVector& params);
@@ -93,6 +98,11 @@ class IRCServer
 	public:
 		IRCServer(std::string ip, int port, std::string passwd);
 		void serverLoop( void );
+
+		void msgSender( Client &client, const std::string &msg );
+		/* use in Channel class. */
+		void welcomeBroadcast( Client &client, Channel &channel );
+		void quitBroadcast( Client &client, Channel &channel , const std::string &msg );
 };
 
 #endif

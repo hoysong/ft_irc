@@ -53,6 +53,7 @@ class Client
 		void setRealName( const std::string &name );
 		void addJoinedChannel( Channel &channel );
 		bool removeJoinedChannel( Channel &channel );
+		bool operator < (const Client &ref ) const;
 };
 
 #endif

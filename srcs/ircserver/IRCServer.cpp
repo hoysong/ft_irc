@@ -67,7 +67,7 @@ void IRCServer::acceptLogics( void )
 	}
 
 	if (!m_epoll.add(clientFd, EPOLLIN | EPOLLRDHUP, newClient))
-		m_clientManager.removeClient(newClient->getFd());
+		m_clientManager.removeClient(newClient->getFd(), "", *this);
 }
 
 /* 클라이언트 이벤트. */
@@ -77,7 +77,7 @@ void IRCServer::recvClient( Client &refClient )
 	if (!refClient.recvFd())
 	{ // client recv() 실패.
 		std::cerr << "\tclient recv() fail." << std::endl;
-		hardDisconnect(refClient);
+		hardDisconnect(refClient, "");
 		return ;
 	}
 
@@ -99,7 +99,7 @@ void IRCServer::eventHandler( struct epoll_event &event )
 	{ // 종료 처리
 		Client *ptr = static_cast<Client *>(event.data.ptr);
 		if (ptr)
-			hardDisconnect(*ptr);
+			hardDisconnect(*ptr, "");
 		return ;
 	}
 	
@@ -116,16 +116,19 @@ void IRCServer::eventHandler( struct epoll_event &event )
 // disconnect client.
 // =========================================================================
 
-void IRCServer::softDisconnect( Client &client )
+void IRCServer::softDisconnect( Client &client, const std::string &msg )
 {
-			m_epoll.del(client.getFd());
-			m_clientManager.removeClient(client.getFd());
+	//quitBroadcastToChannels(client, msg);
+	m_epoll.del(client.getFd());
+	m_clientManager.removeClient(client.getFd(), "", *this);
 }
-void IRCServer::hardDisconnect( Client &client )
+void IRCServer::hardDisconnect( Client &client, const std::string &msg )
 {
-			MyLibft::setLingerZero(client.getFd());
-			m_epoll.del(client.getFd());
-			m_clientManager.removeClient(client.getFd());
+	// 무한재귀 위험성있음!! 로직 나중에 수정
+	MyLibft::setLingerZero(client.getFd());
+	//quitBroadcastToChannels(client, msg);
+	m_epoll.del(client.getFd());
+	m_clientManager.removeClient(client.getFd(), "", *this);
 }
 
 // =========================================================================
@@ -155,11 +158,31 @@ void IRCServer::serverLoop( void )
 /**************************/
 /* IRCServer initializer. */
 /**************************/
+
+#include <ctime>
+#include <string>
+
+std::string makeStartStamp( void )
+{
+    std::time_t now = std::time(NULL);          // 또는 서버 시작 시각을 저장해둔 값
+    std::tm *lt = std::localtime(&now);
+
+    char buf[128];
+    std::strftime(buf, sizeof(buf),
+                  "%a %b %d %Y at %H:%M:%S %Z",
+                  lt);
+
+    return std::string(buf);
+}
+
+
 IRCServer::IRCServer(std::string ip, int port, std::string passwd) :
+	m_serverName("irc.ft_irc.42Gyeongsan.kr"),
 	m_passwd(passwd),
 	m_listenSocket(ip, port)
 {
 	std::cout << "[IRCServer::IRCServer()]" << std::endl;
+	m_startStamp = makeStartStamp();
 	setQuitSignal();
 	m_epoll.add(m_listenSocket.getFd(), EPOLLIN, NULL);
 	std::cout << "\tListenSocket을 epoll에 등록하였습니다." << std::endl;

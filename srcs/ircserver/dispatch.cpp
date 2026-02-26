@@ -2,20 +2,23 @@
 #include "modeMask.hpp"
 #include <cctype>
 
+// tailing 파라미터 split 함수.
+extern bool splitTrailing(std::string str , std::vector<std::string> &vect);
+
 // ==============================================================================
 // 1. 등록 및 인증 관련 (Connection Registration)
 // ==============================================================================
 
 void    IRCServer::handlePass(Client& client, const paramVector& params)
 {
-	if (!params.size())
-	{
-		sendNotEnoughParam(client, "PASS");
-		return ;
-	}
-	else if (client.isRegistered())
+	if (client.isRegistered())
 	{
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_ALREADYREGISTRED, client, "already registered"));
+		return ;
+	}
+	else if (!params.size())
+	{
+		sendNotEnoughParam(client, "PASS");
 		return ;
 	}
 	else if (client.isAuthed())
@@ -23,10 +26,18 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 	else if (params[0] != m_passwd)
 	{
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_PASSWDMISMATCH, client, "Password incorrect"));
-		softDisconnect(client);
+		softDisconnect(client, "");
 		return ;
 	}
 	client.setAuthed();
+	if (client.getUserName().size()
+		&& client.isAuthed()
+		&& client.getNickName() != "*"
+		)
+	{
+		client.setRegistered();
+		welcomeMsg(client);
+	}
 }
 
 static bool charValiedCheck( char c )
@@ -68,11 +79,6 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_NONICKNAMEGIVEN, client, "No nickname given"));
 		return ;
 	}
-	else if (client.isRegistered())
-	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_ALREADYREGISTRED, client, "already registered"));
-		return ;
-	}
 	if ( !isValidNick(params[0]) )
 	{
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_ERRONEUSNICKNAME, client, params[0], "Erroneous nickname"));
@@ -80,6 +86,7 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	}
 	if ( client.getNickName() == params[0] )
 		return ; // 이미 동일하니 무시하기.
+	std::string oldNickBuffer = client.getNickName();
 	if ( !m_clientManager.setClientNickName(client, params[0]) )
 	{
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_NICKNAMEINUSE, client, params[0], "Nickname is already in use"));
@@ -87,12 +94,16 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	}
 	/* 변경 성공! */
 	// client가 속한 채널에 대해 브로드캐스트 로직.
-	nickChangeBroadcastToChannels(client, params[0]);
+	nickChangeBroadcastToChannels(client, oldNickBuffer);
 	if (client.getUserName().size()
 		&& client.isAuthed()
 		&& client.getNickName() != "*"
 		)
+	{
+		if (!client.isRegistered())
+			welcomeMsg(client);
 		client.setRegistered();
+	}
 }
 
 static std::string getUserName( const std::string &str )
@@ -139,14 +150,14 @@ static void setUserMode( Client &client, const std::string &str )
 
 void    IRCServer::handleUser(Client& client, const paramVector& params)
 {
-	if (params.size() < 4)
-	{
-		sendNotEnoughParam(client, "USER");
-		return ;
-	}
-	else if (client.isRegistered())
+	if (client.isRegistered())
 	{
 		msgSender(client, MsgBuilder::buildErrMsg(ERR_ALREADYREGISTRED, client, "already registered"));
+		return ;
+	}
+	else if (params.size() < 4)
+	{
+		sendNotEnoughParam(client, "USER");
 		return ;
 	}
 	std::string userName = getUserName(params[0]);
@@ -165,12 +176,15 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 		&& client.isAuthed()
 		&& client.getNickName() != "*"
 		)
+	{
 		client.setRegistered();
+		welcomeMsg(client);
+	}
 }
 
 void    IRCServer::handleQuit(Client& client, const paramVector& params)
 {
-	softDisconnect(client);
+	softDisconnect(client, "");
 }
 
 void    IRCServer::handleOper(Client& client, const paramVector& params)
