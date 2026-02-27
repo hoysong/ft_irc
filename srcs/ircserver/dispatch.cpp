@@ -3,7 +3,7 @@
 #include <cctype>
 
 // tailing 파라미터 split 함수.
-extern bool splitTrailing(std::string str , std::vector<std::string> &vect);
+extern bool splitMultiTarget(std::string str , std::vector<std::string> &vect);
 
 // ==============================================================================
 // 1. 등록 및 인증 관련 (Connection Registration)
@@ -13,19 +13,19 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_ALREADYREGISTRED, client, "already registered"));
+		sendMsg(client.getFd(), errMsg(ERR_ALREADYREGISTRED, client, "already registered"));
 		return ;
 	}
 	else if (!params.size())
 	{
-		sendNotEnoughParam(client, "PASS");
+		sendMsg(client.getFd(), notEnoughParam(client, "PASS"));
 		return ;
 	}
 	else if (client.isAuthed())
 		return;
 	else if (params[0] != m_passwd)
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_PASSWDMISMATCH, client, "Password incorrect"));
+		sendMsg(client.getFd(), errMsg(ERR_PASSWDMISMATCH, client, "Password incorrect"));
 		softDisconnect(client, "");
 		return ;
 	}
@@ -76,12 +76,12 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 {
 	if (!params.size())
 	{ // 파라미터 부족.
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_NONICKNAMEGIVEN, client, "No nickname given"));
+		sendMsg(client.getFd(), errMsg(ERR_NONICKNAMEGIVEN, client, "No nickname given"));
 		return ;
 	}
 	if ( !isValidNick(params[0]) )
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_ERRONEUSNICKNAME, client, params[0], "Erroneous nickname"));
+		sendMsg(client.getFd(), errMsg(ERR_ERRONEUSNICKNAME, client, params[0], "Erroneous nickname"));
 		return ;
 	}
 	if ( client.getNickName() == params[0] )
@@ -89,7 +89,7 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	std::string oldNickBuffer = client.getNickName();
 	if ( !m_clientManager.setClientNickName(client, params[0]) )
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_NICKNAMEINUSE, client, params[0], "Nickname is already in use"));
+		sendMsg(client.getFd(), errMsg(ERR_NICKNAMEINUSE, client, params[0], "Nickname is already in use"));
 		return ;
 	}
 	/* 변경 성공! */
@@ -152,12 +152,12 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_ALREADYREGISTRED, client, "already registered"));
+		sendMsg(client.getFd(), errMsg(ERR_ALREADYREGISTRED, client, "already registered"));
 		return ;
 	}
 	else if (params.size() < 4)
 	{
-		sendNotEnoughParam(client, "USER");
+		sendMsg(client.getFd(), notEnoughParam(client, "USER"));
 		return ;
 	}
 	std::string userName = getUserName(params[0]);
@@ -184,14 +184,14 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 
 void    IRCServer::handleQuit(Client& client, const paramVector& params)
 {
-	softDisconnect(client, "");
+	softDisconnect(client, goodMsg(client, "QUIT", "Disconnected from client"));
 }
 
 void    IRCServer::handleOper(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_NEEDMOREPARAMS, client, "OPER", "Not enough parameters"));
+		sendMsg(client.getFd(), notEnoughParam(client, "OPER"));
 		return ;
 	}
 }
@@ -212,8 +212,37 @@ void    IRCServer::handleNotice(Client& client, const paramVector& params)
 // 3. 채널 조작 (Channel Operations)
 // ==============================================================================
 
+void IRCServer::exitChannels( Client &client, std::vector<std::string> &targets, const std::string &msg)
+{
+	std::vector<std::string>::iterator iter = targets.begin();
+	std::vector<std::string>::iterator iter_end = targets.end();
+	while (iter != iter_end)
+	{
+		if (msg.empty())
+			m_channelManager.partClientFromChannel(client, *iter, goodMsg(client, "PART", *iter, "Left from channel"));
+		else
+			m_channelManager.partClientFromChannel(client, *iter, goodMsg(client, "PART", *iter, msg));
+		iter++;
+	}
+}
+
 void    IRCServer::handlePart(Client& client, const paramVector& params)
 {
+	if (params.empty())
+	{ // 파라미터 부족
+		sendMsg(client.getFd(), notEnoughParam(client, "PART"));
+		return ;
+	}
+	std::vector<std::string> targets;
+	if (!splitMultiTarget(params[0], targets))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NEEDMOREPARAMS, client, "PART", "key param error"));
+		return ;
+	}
+	if (params.size() == 2)
+		exitChannels(client, targets, params[1]);
+	else
+		exitChannels(client, targets, "");
 }
 
 void    IRCServer::handleTopic(Client& client, const paramVector& params)

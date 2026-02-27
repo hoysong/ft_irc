@@ -25,8 +25,8 @@ class Channel
 		Channel( void );
 		~Channel( void );
 
-		bool addMember( Client &client, const std::string &passwd, IRCServer &server);
-		bool removeMember( Client &client, const std::string &msg, IRCServer &server );
+		bool addMember( Client &client, const std::string &passwd);
+		bool removeMember( Client &client, const std::string &msg);
 		bool addChannelOper( Client &client);
 		bool removeChannelOper( Client &client);
 		bool findMember( Client &client );
@@ -41,6 +41,9 @@ class Channel
 
 		Channel &setChannelName( const std::string &name );
 		Channel &assignPasswd( const std::string &passwd );
+
+		void newMemberBroadcast(Client &client);
+		void quitBroadcast(Client &client, const std::string &msg);
 };
 
 #endif

@@ -16,7 +16,7 @@ class ClientManager
 		std::map<std::string , Client *> m_nameBased;
 	public:
 		Client *addNewClient( int fd );
-		void removeClient( int fd, const std::string &msg, IRCServer &server );
+		void removeClient( int fd, const std::string &msg );
 
 		bool isMaxClient( void );
 //		bool setClientNickName( int fd, const std::string &name );

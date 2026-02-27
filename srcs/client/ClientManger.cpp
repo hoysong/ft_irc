@@ -106,7 +106,7 @@ Client *ClientManager::addNewClient( int fd )
 	return (newClient);
 };
 
-void ClientManager::removeClient( int fd, const std::string &msg, IRCServer &server )
+void ClientManager::removeClient( int fd, const std::string &msg )
 {
 	std::cout << "[ClientManager::removeClient()]" << std::endl;
 
@@ -121,9 +121,7 @@ void ClientManager::removeClient( int fd, const std::string &msg, IRCServer &ser
 	std::map<std::string, Channel *> joined = client.getJoinedChannel();
 	for(std::map<std::string, Channel *>::iterator iter = joined.begin(); iter != joined.end(); iter++)
 	{
-		iter->second->removeMember(client, msg, server);
-		if (iter->second->isChannelEmpty())
-			server.m_channelManager.eraseEmptyChannel(iter->first);
+		iter->second->removeMember(client, msg);
 	}
 
 	/* delete from fdBased map. */
