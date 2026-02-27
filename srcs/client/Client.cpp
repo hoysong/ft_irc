@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "IRCServer.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include "MyLibft.hpp"
@@ -87,8 +88,17 @@ std::map<std::string, Channel *> Client::getJoinedChannel( void )
 //	return (m_nickName);
 //}
 
+/* client manager로부터 닉변 받은 상황. */
+/* 자체적으로 닉네임 채널들에게 알리기.*/
 void Client::assignNickName( const std::string &name )
 {
+	std::map<std::string, Channel *>::iterator iter = m_channels.begin();
+	std::map<std::string, Channel *>::iterator iterEnd = m_channels.end();
+	while (iter != iterEnd)
+	{
+		iter->second->broadcastNickChanged(*this, name);
+		iter++;
+	}
 	m_nickName = name;
 }
 
@@ -136,6 +146,7 @@ void Client::addJoinedChannel( Channel &channel )
 	m_channels[channel.getChannelName()] = &channel;
 }
 
+/* 함수 수정 금지. 채널에서 호출되고 있음. */
 bool Client::removeJoinedChannel( Channel &channel )
 {
 	std::map<std::string, Channel *>::iterator iter = m_channels.find(channel.getChannelName());
@@ -143,6 +154,19 @@ bool Client::removeJoinedChannel( Channel &channel )
 		return (false); // 입장하지 않았음.
 	m_channels.erase(iter);
 	return (true);
+}
+
+/* 검증 안된 함수. */
+void Client::quitAllChannels( IRCServer &server )
+{
+	std::map<std::string, Channel *>::iterator iter = m_channels.begin();
+	std::map<std::string, Channel *>::iterator iter_end = m_channels.end();
+	while (iter != iter_end)
+	{
+		iter->second->removeMember(*this, "", server);
+		iter++;
+	}
+	m_channels.clear();
 }
 
 bool Client::popLine( std::string &line )

@@ -19,7 +19,7 @@ class ClientManager
 		void removeClient( int fd, const std::string &msg, IRCServer &server );
 
 		bool isMaxClient( void );
-		bool setClientNickName( int fd, const std::string &name );
+//		bool setClientNickName( int fd, const std::string &name );
 		bool setClientNickName( Client &client, const std::string &name );
 		bool isNickExists( const std::string &nickName ) const;
 

@@ -13,16 +13,6 @@ void IRCServer::msgSender( Client &client, const std::string &msg )
 // ==============================================================================================================
 
 /* 채널에 입장했을 때 브로드캐스트. */
-//void IRCServer::welcomeBroadcast ( Client &client, Channel &channel )
-//{
-//	std::map<std::string, Client *> members = channel.getChannelMembers();
-//	for (std::map<std::string, Client *>::iterator iter = members.begin(); iter != members.end(); iter++)
-//	{
-//		msgSender( *(iter->second),
-//				MsgBuilder::buildSendMsg(client, "JOIN", channel.getChannelName())
-//				);
-//	}
-//}
 
 void IRCServer::nickChangeBroadcast(Client &client, Channel &channel, const std::string &oldNick)
 {

@@ -27,6 +27,26 @@ void IRCServer::quitBroadcast( Client &client, Channel &channel , const std::str
 	}
 }
 
+void Channel::broadcastNickChanged( Client &client, const std::string &newNick)
+{
+	/* 여기까지 함수호출로 들어왔으면 정제된 데이터만 있을 것임.
+	 * 신뢰하고 로직 실행해도 됨.
+	 * 문제가 있다면 이전에 있는 것이므로 여기서 데이터 검증없이 돌러서 터뜨려야 함.
+	 */
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
+	{
+		sendMsg(iter->second->getFd(),
+				"NEWNEW" + client.getMsgPrefix() + " NICK :" + newNick + "\r\n");
+		iter++;
+	}
+	// 브로드캐스트 끝났으니 닉변 클라이언트 노드 교체.
+	iter = m_members.find(client.getNickName());
+	m_members.erase(iter);
+	m_members[newNick] = &client;
+}
+
 bool Channel::addMember( Client &client, const std::string &passwd, IRCServer &server)
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());

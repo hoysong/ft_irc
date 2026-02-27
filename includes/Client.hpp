@@ -6,6 +6,7 @@
 # include <map>
 
 class Channel;
+class IRCServer;
 
 class Client
 {
@@ -53,6 +54,7 @@ class Client
 		void setRealName( const std::string &name );
 		void addJoinedChannel( Channel &channel );
 		bool removeJoinedChannel( Channel &channel );
+		void quitAllChannels( IRCServer &server );
 		bool operator < (const Client &ref ) const;
 };
 

@@ -94,7 +94,7 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	}
 	/* 변경 성공! */
 	// client가 속한 채널에 대해 브로드캐스트 로직.
-	nickChangeBroadcastToChannels(client, oldNickBuffer);
+	//nickChangeBroadcastToChannels(client, oldNickBuffer);
 	if (client.getUserName().size()
 		&& client.isAuthed()
 		&& client.getNickName() != "*"

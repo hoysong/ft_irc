@@ -33,6 +33,8 @@ class Channel
 		bool isChannelEmpty( void );
 		bool isChannelOper( Client &client );
 
+		void broadcastNickChanged( Client &client, const std::string &newNick);
+
 		std::string getPasswd( void );
 		std::string getChannelName( void );
 		memberMap &getChannelMembers( void );

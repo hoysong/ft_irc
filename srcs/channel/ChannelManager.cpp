@@ -57,6 +57,14 @@ bool ChannelManager::getChannel( const std::string &name, Channel *&channel )
 	return (true);
 }
 
+bool ChannelManager::eraseEmptyChannel( const std::string &channelName )
+{
+	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
+	if (iter == m_channels.end())
+		return (false);
+	m_channels.erase(iter);
+	return (true);
+}
 
 ChannelManager::ChannelManager( void )
 {

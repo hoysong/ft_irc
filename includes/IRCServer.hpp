@@ -26,7 +26,6 @@ class IRCServer
 		const std::string m_passwd;
 		ListenSocket m_listenSocket;
 		ClientManager m_clientManager;
-		ChannelManager m_channelManager;
 		EpollManager m_epoll;
 		
 		void eventHandler( struct epoll_event &event );
@@ -96,6 +95,7 @@ class IRCServer
 		void	handleKill(Client& client, const paramVector& params);
 
 	public:
+		ChannelManager m_channelManager;
 		IRCServer(std::string ip, int port, std::string passwd);
 		void serverLoop( void );
 
@@ -104,5 +104,7 @@ class IRCServer
 		void welcomeBroadcast( Client &client, Channel &channel );
 		void quitBroadcast( Client &client, Channel &channel , const std::string &msg );
 };
+
+bool sendMsg( int fd, const std::string &buf );
 
 #endif

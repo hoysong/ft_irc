@@ -24,6 +24,7 @@ class ChannelManager
 //				const std::string &channelName,
 //				IRCServer &server);
 		bool getChannel( const std::string &name, Channel *&channel );
+		bool eraseEmptyChannel( const std::string &channelName );
 
 		ChannelManager( void );
 		~ChannelManager( void );

@@ -13,21 +13,21 @@ bool ClientManager::isMaxClient( void )
 	return (true);
 }
 
-/* client에게 닉네임을 최초로 부여하는 함수. */
-bool ClientManager::setClientNickName( int fd, const std::string &name )
-{
-	/* 일단 클라이언트 받아오기. */
-	std::map<int, Client *>::iterator fdIter = m_fdBased.find(fd);
-	if (fdIter == m_fdBased.end()) // fd 조차 존재하지 않으면.
-		throw(std::runtime_error("[ClientManager::setClientNickName]: fd not found."));
-	/* 이름 기반 map에 추가하기. */
-	std::map<std::string, Client *>::iterator nameIter = m_nameBased.find(name);
-	if ( nameIter != m_nameBased.end() )
-		return (false); // 이미 존재합니다.
-	m_nameBased[name] = fdIter->second;
-	fdIter->second->assignNickName( name );
-	return (true); // 이름 부여 성공.
-}
+///* client에게 닉네임을 최초로 부여하는 함수. */
+//bool ClientManager::setClientNickName( int fd, const std::string &name )
+//{
+//	/* 일단 클라이언트 받아오기. */
+//	std::map<int, Client *>::iterator fdIter = m_fdBased.find(fd);
+//	if (fdIter == m_fdBased.end()) // fd 조차 존재하지 않으면.
+//		throw(std::runtime_error("[ClientManager::setClientNickName]: fd not found."));
+//	/* 이름 기반 map에 추가하기. */
+//	std::map<std::string, Client *>::iterator nameIter = m_nameBased.find(name);
+//	if ( nameIter != m_nameBased.end() )
+//		return (false); // 이미 존재합니다.
+//	m_nameBased[name] = fdIter->second;
+//	fdIter->second->assignNickName( name );
+//	return (true); // 이름 부여 성공.
+//}
 
 bool ClientManager::setClientNickName( Client &client, const std::string &name )
 {
@@ -117,10 +117,13 @@ void ClientManager::removeClient( int fd, const std::string &msg, IRCServer &ser
 
 	/* disconnect from Channel. */
 	Client &client = *(iter->second);
+	/*얘는 여기 담는게 맞음. 컨테이너 복사생성으로 돌려야 없애면서 나갈 수 있음.*/
 	std::map<std::string, Channel *> joined = client.getJoinedChannel();
 	for(std::map<std::string, Channel *>::iterator iter = joined.begin(); iter != joined.end(); iter++)
 	{
 		iter->second->removeMember(client, msg, server);
+		if (iter->second->isChannelEmpty())
+			server.m_channelManager.eraseEmptyChannel(iter->first);
 	}
 
 	/* delete from fdBased map. */
