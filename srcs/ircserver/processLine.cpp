@@ -105,7 +105,7 @@ void IRCServer::dispatch( Client &client, t_message &message )
 		&& message.command != "NICK"
 		)
 	{
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_NOTREGISTERED, client, "You have not registered yet"));
+		sendMsg(client.getFd(), errMsg(ERR_NOTREGISTERED, client, "You have not registered yet"));
 		return ;
 	}
 	/* 이제 command에 따른 적절한 dispatch. */
@@ -115,7 +115,7 @@ void IRCServer::dispatch( Client &client, t_message &message )
 	{ // 없는 명령이거나 못찾음.
 		std::string str;
 
-		msgSender(client, MsgBuilder::buildErrMsg(ERR_UNKNOWNCOMMAND, client, message.command, "Unknown command"));
+		sendMsg(client.getFd(), errMsg(ERR_UNKNOWNCOMMAND, client, message.command, "Unknown command"));
 		return ;
 	}
 	std::cout << "command found: " << message.command << std::endl;

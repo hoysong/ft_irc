@@ -16,8 +16,11 @@ class ChannelManager
 		bool addClientToChannel(
 				Client &client,
 				const std::string &channelName,
-				const std::string &passwd,
-				IRCServer &server);
+				const std::string &passwd);
+		bool partClientFromChannel(
+				Client &client,
+				const std::string &channelName,
+				const std::string &msg);
 //		bool removeClientFromChannel(
 //				Client &client,
 //				const std::string &msg,
@@ -25,6 +28,8 @@ class ChannelManager
 //				IRCServer &server);
 		bool getChannel( const std::string &name, Channel *&channel );
 		bool eraseEmptyChannel( const std::string &channelName );
+		void eraseAllEmptyChannels( void );
+		bool findChannel( const std::string &channelName );
 
 		ChannelManager( void );
 		~ChannelManager( void );

@@ -2,31 +2,6 @@
 #include <signal.h>
 #include "MyLibft.hpp"
 
-bool sendMsg( int fd, const std::string &buf )
-{
-	size_t	total = 0;
-	size_t	len = buf.size();
-
-	while (total < len)
-	{
-		ssize_t	n = send(fd, buf.data() + total, len - total, MSG_NOSIGNAL);
-		if (n > 0)
-			total += static_cast<size_t>(n);
-		else if (n < 0)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return (false); // 타임아웃 또는 에러.
-			else if (errno == EINTR)
-				continue; // 시그널로 방해받음 다시 시도.
-			else
-				return (false); // 실패
-		}
-		else
-			break; // 끝?
-	}
-	return (true);
-}
-
 // =========================================================================
 // signal handler.
 // =========================================================================
@@ -92,7 +67,7 @@ void IRCServer::acceptLogics( void )
 	}
 
 	if (!m_epoll.add(clientFd, EPOLLIN | EPOLLRDHUP, newClient))
-		m_clientManager.removeClient(newClient->getFd(), "", *this);
+		m_clientManager.removeClient(newClient->getFd(), "");
 }
 
 /* 클라이언트 이벤트. */
@@ -102,7 +77,7 @@ void IRCServer::recvClient( Client &refClient )
 	if (!refClient.recvFd())
 	{ // client recv() 실패.
 		std::cerr << "\tclient recv() fail." << std::endl;
-		hardDisconnect(refClient, "");
+		hardDisconnect(refClient, goodMsg(refClient, "QUIT", "Disconnected by server"));
 		return ;
 	}
 
@@ -124,7 +99,7 @@ void IRCServer::eventHandler( struct epoll_event &event )
 	{ // 종료 처리
 		Client *ptr = static_cast<Client *>(event.data.ptr);
 		if (ptr)
-			hardDisconnect(*ptr, "");
+			hardDisconnect(*ptr, goodMsg(*ptr, "QUIT", "Disconnected by unknown reason"));
 		return ;
 	}
 	
@@ -145,7 +120,8 @@ void IRCServer::softDisconnect( Client &client, const std::string &msg )
 {
 	//quitBroadcastToChannels(client, msg);
 	m_epoll.del(client.getFd());
-	m_clientManager.removeClient(client.getFd(), "", *this);
+	m_clientManager.removeClient(client.getFd(), msg);
+	m_channelManager.eraseAllEmptyChannels();
 }
 void IRCServer::hardDisconnect( Client &client, const std::string &msg )
 {
@@ -153,7 +129,8 @@ void IRCServer::hardDisconnect( Client &client, const std::string &msg )
 	MyLibft::setLingerZero(client.getFd());
 	//quitBroadcastToChannels(client, msg);
 	m_epoll.del(client.getFd());
-	m_clientManager.removeClient(client.getFd(), "", *this);
+	m_clientManager.removeClient(client.getFd(), msg);
+	m_channelManager.eraseAllEmptyChannels();
 }
 
 // =========================================================================

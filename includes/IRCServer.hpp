@@ -1,10 +1,10 @@
 #ifndef IRCSERVER_HPP
 # define IRCSERVER_HPP
+# include "msgHdler.hpp"
 # include "ListenSocket.hpp"
 # include "EpollManager.hpp"
 # include "ClientManager.hpp"
 # include "ChannelManager.hpp"
-# include "MsgBuilder.hpp"
 # include "MyLibft.hpp"
 # include <string>
 # include <map>
@@ -38,12 +38,6 @@ class IRCServer
 		void hardDisconnect( Client &client, const std::string &msg ); // 즉시차단 하는 경우.
 
 		void welcomeMsg( Client &client );
-		/* 단독호출 금지. nickChangeBroadcastToChannels()을 대신 사용.*/
-		void nickChangeBroadcast(Client &client, Channel &channel, const std::string &oldNick);
-		void nickChangeBroadcastToChannels( Client &client, const std::string  &oldNick);
-		/* 단독호출 금지. quitBroadcastToChannels()을 대신 사용.*/
-		void quitBroadcastToChannels( Client &client, const std::string &msg);
-		void sendNotEnoughParam( Client &client, const std::string &cmd );
 
 		/*************/
 		/* dispatch. */
@@ -66,15 +60,9 @@ class IRCServer
 
 		// 3. 채널 조작 (Channel Operations)
 		void	handleJoin(Client& client, const paramVector& params);
-//		void	aboutExistChannel(Client &client,
-//				Channel &channel,
-//				std::vector<std::string> &servers,
-//				std::vector<std::string> &keys,
-//				std::vector<std::string>::iterator &servIter,
-//				std::vector<std::string>::iterator &keyIter
-//				);
 		void	joinProcess(Client &client, paramVector &servers, paramVector &keys);
 		void	handlePart(Client& client, const paramVector& params);
+			void exitChannels(Client &client, std::vector<std::string> &targets, const std::string &msg);
 		void	handleTopic(Client& client, const paramVector& params);
 		void	handleNames(Client& client, const paramVector& params);
 		void	handleList(Client& client, const paramVector& params);
@@ -98,11 +86,6 @@ class IRCServer
 		ChannelManager m_channelManager;
 		IRCServer(std::string ip, int port, std::string passwd);
 		void serverLoop( void );
-
-		void msgSender( Client &client, const std::string &msg );
-		/* use in Channel class. */
-		void welcomeBroadcast( Client &client, Channel &channel );
-		void quitBroadcast( Client &client, Channel &channel , const std::string &msg );
 };
 
 bool sendMsg( int fd, const std::string &buf );

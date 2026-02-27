@@ -1,6 +1,5 @@
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "IRCServer.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include "MyLibft.hpp"
@@ -157,13 +156,13 @@ bool Client::removeJoinedChannel( Channel &channel )
 }
 
 /* 검증 안된 함수. */
-void Client::quitAllChannels( IRCServer &server )
+void Client::quitAllChannels( void )
 {
 	std::map<std::string, Channel *>::iterator iter = m_channels.begin();
 	std::map<std::string, Channel *>::iterator iter_end = m_channels.end();
 	while (iter != iter_end)
 	{
-		iter->second->removeMember(*this, "", server);
+		iter->second->removeMember(*this, "");
 		iter++;
 	}
 	m_channels.clear();

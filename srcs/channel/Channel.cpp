@@ -3,27 +3,25 @@
 #include "Client.hpp"
 #include <iostream>
 
-void IRCServer::welcomeBroadcast ( Client &client, Channel &channel )
+void Channel::quitBroadcast( Client &client, const std::string &msg)
 {
-	std::map<std::string, Client *> members = channel.getChannelMembers();
-	for (std::map<std::string, Client *>::iterator iter = members.begin(); iter != members.end(); iter++)
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
 	{
-		msgSender( *(iter->second),
-				MsgBuilder::buildSendMsg(client, "JOIN", channel.getChannelName())
-				);
+		sendMsg(iter->second->getFd(), msg);
+		iter++;
 	}
 }
 
-void IRCServer::quitBroadcast( Client &client, Channel &channel , const std::string &msg)
+void Channel::newMemberBroadcast(Client &client)
 {
-	std::map<std::string, Client *> members = channel.getChannelMembers();
-	std::string buff = msg;
-	if (buff.empty())
-		buff = "Connection closed";
-	for (std::map<std::string, Client *>::iterator iter = members.begin(); iter != members.end(); iter++)
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
 	{
-		msgSender( *(iter->second),
-				":" + client.getNickName() +"!" + client.getUserName() + "@" + client.getHost() + " QUIT :" + buff );
+		sendMsg(iter->second->getFd(), goodMsg(client, "JOIN", m_channelName));
+		iter++;
 	}
 }
 
@@ -37,8 +35,7 @@ void Channel::broadcastNickChanged( Client &client, const std::string &newNick)
 	std::map<std::string, Client *>::iterator iter_end = m_members.end();
 	while (iter != iter_end)
 	{
-		sendMsg(iter->second->getFd(),
-				"NEWNEW" + client.getMsgPrefix() + " NICK :" + newNick + "\r\n");
+		sendMsg(iter->second->getFd(), client.getMsgPrefix() + " NICK :" + newNick + "\r\n");
 		iter++;
 	}
 	// 브로드캐스트 끝났으니 닉변 클라이언트 노드 교체.
@@ -47,7 +44,7 @@ void Channel::broadcastNickChanged( Client &client, const std::string &newNick)
 	m_members[newNick] = &client;
 }
 
-bool Channel::addMember( Client &client, const std::string &passwd, IRCServer &server)
+bool Channel::addMember( Client &client, const std::string &passwd )
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter != m_members.end())
@@ -57,23 +54,21 @@ bool Channel::addMember( Client &client, const std::string &passwd, IRCServer &s
 	}
 	if (passwd != m_passwd)
 	{
-		server.msgSender(client, \
-			MsgBuilder::buildErrMsg(ERR_BADCHANNELKEY, client, m_channelName, \
-				"Cannot join channel (+k) bad key"));
+		sendMsg(client.getFd(), errMsg(ERR_BADCHANNELKEY, client, m_channelName, "Cannot join channel (+k)"));
 		return (false);
 	}
 	m_members[client.getNickName()] = &client;
 	client.addJoinedChannel(*this);
-	server.welcomeBroadcast(client, *this);
+	newMemberBroadcast(client);
 	std::cout << "success to add member to channel " << m_channelName << std::endl;
 	return (true);
 }
-bool Channel::removeMember( Client &client, const std::string &msg, IRCServer &server)
+bool Channel::removeMember( Client &client, const std::string &msg )
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter == m_members.end())
 		return (false); // 이미 없음.
-	server.quitBroadcast(client, *this, msg); // 퇴장 브로드캐스트.
+	quitBroadcast(client, msg);
 	iter->second->removeJoinedChannel(*this); // 유저 객체에서 채널목록 삭제.
 	m_members.erase(iter); // 채널측 유저목록 삭제.
 	removeChannelOper(client); // 오퍼라면 삭제.
