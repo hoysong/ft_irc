@@ -2,7 +2,6 @@
 # define CLIENTMANAGER_HPP
 # include "Client.hpp"
 # include <map>
-# include <vector>
 
 # define MAX_CLIENT 1000
 
@@ -27,6 +26,7 @@ class ClientManager
 		bool sendMsg( Client &client, const std::string &msg );
 		ClientManager( void );
 		~ClientManager( void );
+		void clientManagerAnnounce( void );
 };
 
 #endif

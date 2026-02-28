@@ -1,10 +1,24 @@
 #include "IRCServer.hpp"
+#include <ios>
 #include <signal.h>
 #include "MyLibft.hpp"
 
 // =========================================================================
 // signal handler.
 // =========================================================================
+
+#define CYAN "\033[46m"
+#define BOLDGREEN "\033[1;32m"
+#define NC "\033[0m"
+
+void IRCServer::serverAnnounce( void )
+{
+	std::cout << BOLDGREEN << "serverAnnounce" << NC << std::endl;
+	std::cout << std::boolalpha;
+	m_clientManager.clientManagerAnnounce();
+	m_channelManager.channelManagerAnnounce();
+	std::cout << std::noboolalpha;
+}
 
 bool g_running = true;
 
@@ -118,26 +132,25 @@ void IRCServer::eventHandler( struct epoll_event &event )
 
 void IRCServer::softDisconnect( Client &client, const std::string &msg )
 {
-	//quitBroadcastToChannels(client, msg);
+	std::cout << "[softDisconnect]" << std::endl;
 	m_epoll.del(client.getFd());
 	m_clientManager.removeClient(client.getFd(), msg);
 	m_channelManager.eraseAllEmptyChannels();
+	std::cout << "\t[softDisconnect] END" << std::endl;
 }
 void IRCServer::hardDisconnect( Client &client, const std::string &msg )
 {
-	// 무한재귀 위험성있음!! 로직 나중에 수정
+	std::cout << "[hardDisconnect]" << std::endl;
 	MyLibft::setLingerZero(client.getFd());
-	//quitBroadcastToChannels(client, msg);
 	m_epoll.del(client.getFd());
 	m_clientManager.removeClient(client.getFd(), msg);
 	m_channelManager.eraseAllEmptyChannels();
+	std::cout << "\t[hardDisconnect] END" << std::endl;
 }
 
 // =========================================================================
 // server loop.
 // =========================================================================
-#define CYAN "\033[46m"
-#define NC "\033[0m"
 void IRCServer::serverLoop( void )
 {
 	struct epoll_event events[MAX_EVENTS];
@@ -153,6 +166,7 @@ void IRCServer::serverLoop( void )
 		for(int i = 0; i < eventCount; i++)
 		{
 			eventHandler(events[i]);
+			serverAnnounce();
 		}
 	}
 }

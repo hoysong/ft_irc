@@ -55,6 +55,7 @@ class Client
 		bool removeJoinedChannel( Channel &channel );
 		void quitAllChannels( void );
 		bool operator < (const Client &ref ) const;
+		void announce( void );
 };
 
 #endif

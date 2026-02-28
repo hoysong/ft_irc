@@ -33,6 +33,8 @@ class ChannelManager
 
 		ChannelManager( void );
 		~ChannelManager( void );
+		void channelManagerAnnounce( void );
+
 };
 
 #endif

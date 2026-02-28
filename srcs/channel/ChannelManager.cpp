@@ -1,6 +1,21 @@
 #include "ChannelManager.hpp"
+#include "Channel.hpp"
 #include "msgHdler.hpp"
 #include <iostream>
+
+void ChannelManager::channelManagerAnnounce( void )
+{
+	std::cout << "==================================================" << std::endl;
+	std::cout << "ChannelManager" << std::endl;
+	std::cout << "==================================================" << std::endl;
+	std::map<std::string, Channel>::iterator iter = m_channels.begin();
+	std::map<std::string, Channel>::iterator iter_end = m_channels.end();
+	while (iter != iter_end)
+	{
+		iter->second.announce();
+		iter++;
+	}
+}
 
 bool ChannelManager::addClientToChannel(
 		Client &client,
@@ -13,13 +28,16 @@ bool ChannelManager::addClientToChannel(
 	{ // 찾은 채널 클라이언트 추가.
 		std::cout << "Channel Found!" << std::endl;
 		if (!(iter->second.addMember(client, passwd)))
-			return (false); // 클라이언트 추가 실패 (이미 존재 가만히 무시).
+			return (false); // 추가 실패.
+		else
+			return (true); // 추가 성공.
 	}
 	std::cout << "Channel not found" << std::endl;
 	/* 채널 못찾음.
 	 * 채널 생성, 클라이언트 추가.
 	 */
 	m_channels[channelName].setChannelName(channelName).assignPasswd(passwd).addMember(client, passwd);
+	m_channels[channelName].addChannelOper(client);
 	std::cout << "\tadd client to channel done." << std::endl;
 	return (true);
 }
@@ -49,26 +67,6 @@ bool ChannelManager::partClientFromChannel(
 	return (true);
 }
 
-//bool ChannelManager::removeClientFromChannel(
-//		Client &client,
-//		const std::string &msg,
-//		const std::string &channelName,
-//		IRCServer &server)
-//{
-//	std::cout << "[ChannelManager::removeClientFromChannel()]" << std::endl;
-//	chanMap::iterator iter = m_channels.find(channelName);
-//	if (iter != m_channels.end())
-//	{
-//		if (iter->second.removeMember(client, msg, server))
-//		{
-//			if (iter->second.isChannelEmpty())
-//				m_channels.erase(iter);
-//			return (true);
-//		}
-//	}
-//	return (false); // 채널을 찾지 못함.
-//}
-
 bool ChannelManager::getChannel( const std::string &name, Channel *&channel )
 {
 	std::map<std::string, Channel>::iterator iter = m_channels.find(name);
@@ -90,7 +88,7 @@ bool ChannelManager::eraseEmptyChannel( const std::string &channelName )
 void ChannelManager::eraseAllEmptyChannels( void )
 {
 	std::map<std::string, Channel>::iterator iter = m_channels.begin();
-	std::map<std::string, Channel>::iterator iter_end = m_channels.begin();
+	std::map<std::string, Channel>::iterator iter_end = m_channels.end();
 	while (iter != iter_end)
 	{
 		if (iter->second.isChannelEmpty())
@@ -99,7 +97,8 @@ void ChannelManager::eraseAllEmptyChannels( void )
 			iter = m_channels.begin();
 			iter_end = m_channels.end();
 		}
-		iter++;
+		else
+			iter++;
 	}
 }
 

@@ -17,9 +17,9 @@ class Channel
 		std::set<Client *> m_opers;
 
 		// need channel modes.
+		std::string m_passwd; // 비어있으면 -k
 		bool m_inviteOnly;
 		bool m_topicOpOnly;
-		std::string m_passwd; // 비어있으면 -k
 		int m_maxMembers;
 	public:
 		Channel( void );
@@ -44,6 +44,7 @@ class Channel
 
 		void newMemberBroadcast(Client &client);
 		void quitBroadcast(Client &client, const std::string &msg);
+		void announce( void );
 };
 
 #endif

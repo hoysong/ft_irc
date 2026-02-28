@@ -2,6 +2,35 @@
 #include "IRCServer.hpp"
 #include "Client.hpp"
 #include <iostream>
+#include <set>
+
+void Channel::announce( void )
+{
+	std::cout << "============Channel============" << std::endl;
+	std::cout << "m_channelName: " << m_channelName << std::endl;
+	std::cout << "m_passwd     : " << m_passwd << std::endl;
+	std::cout << "m_inviteOnly : " << m_inviteOnly << std::endl;
+	std::cout << "m_topicOpOnly: " << m_topicOpOnly << std::endl;
+	std::cout << "m_maxMembers : " << m_maxMembers << std::endl;
+
+	std::cout << "[Announce Channel Members]" << std::endl;
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
+	{
+		iter->second->announce();
+		iter++;
+	}
+
+	std::cout << "[Announce Channel Operators]" << std::endl;
+	std::set<Client *>::iterator operIter = m_opers.begin();
+	std::set<Client *>::iterator operIter_end = m_opers.end();
+	while (operIter != operIter_end)
+	{
+		(*operIter)->announce();
+		operIter++;
+	}
+}
 
 void Channel::quitBroadcast( Client &client, const std::string &msg)
 {

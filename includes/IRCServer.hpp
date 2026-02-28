@@ -5,7 +5,6 @@
 # include "EpollManager.hpp"
 # include "ClientManager.hpp"
 # include "ChannelManager.hpp"
-# include "MyLibft.hpp"
 # include <string>
 # include <map>
 
@@ -81,6 +80,7 @@ class IRCServer
 		void	handleCap(Client& client, const paramVector& params);
 		void	handleAway(Client& client, const paramVector& params);
 		void	handleKill(Client& client, const paramVector& params);
+		void	serverAnnounce( void );
 
 	public:
 		ChannelManager m_channelManager;

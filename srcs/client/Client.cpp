@@ -4,6 +4,20 @@
 #include <iostream> // cout cerr.
 #include "MyLibft.hpp"
 
+void Client::announce( void )
+{
+	std::cout << "============CLIENT============" << std::endl;
+	std::cout << "fd            : " << m_fd << std::endl;
+	std::cout << "m_nickName    : " << m_nickName << std::endl;
+	std::cout << "m_userName    : " << m_userName << std::endl;
+	std::cout << "m_realName    : " << m_realName << std::endl;
+	std::cout << "m_authed      : " << m_authed << std::endl;
+	std::cout << "m_registered  : " << m_registered << std::endl;
+	std::cout << "m_IRCOperaotr : " << m_IRCOperaotr << std::endl;
+	std::cout << "m_modInvisible: " << m_modInvisible << std::endl;
+	std::cout << "m_modWallops  : " << m_modWallops << std::endl;
+}
+
 void Client::appendBuffer( char *buffer, ssize_t size )
 {
 	m_buffer.append(buffer, size);

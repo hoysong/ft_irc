@@ -1,10 +1,32 @@
 #include "ClientManager.hpp"
 #include "Channel.hpp"
 #include "MyLibft.hpp"
-#include "IRCServer.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include <cerrno>
+
+void ClientManager::clientManagerAnnounce( void )
+{
+	std::cout << "==================================================" << std::endl;
+	std::cout << "ClientManager" << std::endl;
+	std::cout << "==================================================" << std::endl;
+	std::map<int, Client *>::iterator iter = m_fdBased.begin();
+	std::map<int, Client *>::iterator iter_end = m_fdBased.end();
+	while (iter != iter_end)
+	{
+		iter->second->announce();
+		iter++;
+	}
+
+	std::cout << "NAME BASED ITER===================================" << std::endl;
+	std::map<std::string, Client *>::iterator name_iter = m_nameBased.begin();
+	std::map<std::string, Client *>::iterator name_iter_end = m_nameBased.end();
+	while (name_iter != name_iter_end)
+	{
+		name_iter->second->announce();
+		name_iter++;
+	}
+}
 
 bool ClientManager::isMaxClient( void )
 {
@@ -123,6 +145,7 @@ void ClientManager::removeClient( int fd, const std::string &msg )
 	{
 		iter->second->removeMember(client, msg);
 	}
+	std::cout << "\t[Client exited from all joined channels.]" << std::endl;
 
 	/* delete from fdBased map. */
 	if (iter == m_fdBased.end())
