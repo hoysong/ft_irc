@@ -2,22 +2,7 @@
 
 typedef std::vector<std::string> strVect;
 
-extern bool splitUntilChar(std::string &line, std::string seperator, std::string &result);
-
-bool splitMultiTarget(std::string str , strVect &vect)
-{
-	for( std::string result; splitUntilChar(str, ",", result); )
-	{
-		if (result.empty())
-			return (false);
-		vect.push_back(str);
-	}
-	if (!str.empty())
-		vect.push_back(str);
-	else if (str.empty())
-		return (false);
-	return (true);
-}
+extern void splitMultiTarget(std::string str , strVect &vect);
 
 void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &keys)
 {
@@ -53,20 +38,13 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		return ;
 	}
 	else
-	{
-		if (!splitMultiTarget(params[0], servers))
-		{
-			sendMsg(client.getFd(), errMsg(ERR_BADCHANMASK, client, params[0], "bad channel name"));
-			return ;
-		}
-	}
+		splitMultiTarget(params[0], servers); // 콤마 기준 split
 	if (params.size() > 1)
+		splitMultiTarget(params[1], keys); // 콤마 기준 split
+	if (servers.empty() && keys.empty())
 	{
-		if (!splitMultiTarget(params[1], keys))
-		{
-			sendMsg(client.getFd(), errMsg(ERR_NEEDMOREPARAMS, client, "JOIN", "key param error"));
-			return ;
-		}
+		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
+		return ;
 	}
 	/* 키가 채널보다 많으면 빈 값으로 취급할거임. */
 	/* 이미 존재하는 채널이면 생성이 아닌 참여. */

@@ -27,9 +27,11 @@ class Channel
 
 		bool addMember( Client &client, const std::string &passwd);
 		bool removeMember( Client &client, const std::string &msg);
+		bool removeMember( const std::string &target, const std::string &msg);
 		bool addChannelOper( Client &client);
 		bool removeChannelOper( Client &client);
 		bool findMember( Client &client );
+		bool findMember( const std::string &name );
 		bool isChannelEmpty( void );
 		bool isChannelOper( Client &client );
 

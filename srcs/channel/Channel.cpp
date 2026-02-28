@@ -104,6 +104,14 @@ bool Channel::removeMember( Client &client, const std::string &msg )
 	return (true);
 }
 
+bool Channel::removeMember( const std::string &target, const std::string &msg)
+{
+	std::map<std::string, Client *>::iterator iter = m_members.find(target);
+	if (iter == m_members.end())
+		return (false);
+	return (removeMember(*(iter->second), msg));
+}
+
 bool Channel::addChannelOper( Client &client)
 {
 	std::set<Client *>::iterator iter = m_opers.find(&client);
@@ -118,6 +126,14 @@ bool Channel::removeChannelOper( Client &client)
 	if (iter == m_opers.end())
 		return (false); // 이미 없음.
 	m_opers.erase(&client);
+	return (true);
+}
+
+
+bool Channel::findMember( const std::string &name )
+{
+	if (m_members.find(name) == m_members.end())
+		return (false);
 	return (true);
 }
 

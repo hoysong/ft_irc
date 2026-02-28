@@ -1,9 +1,23 @@
 #include "IRCServer.hpp"
 #include "modeMask.hpp"
 #include <cctype>
+#include <vector>
 
 // tailing 파라미터 split 함수.
-extern bool splitMultiTarget(std::string str , std::vector<std::string> &vect);
+extern bool splitUntilChar(std::string &line, std::string seperator, std::string &result);
+
+void splitMultiTarget(std::string str , std::vector<std::string> &vect)
+{
+	std::cout << "str: " << str << std::endl;
+	for( std::string result; splitUntilChar(str, ",", result); )
+	{
+		std::cout << "str: " << str << std::endl;
+		if (!result.empty())
+			vect.push_back(result);
+	}
+	if (!str.empty())
+			vect.push_back(str);
+}
 
 // ==============================================================================
 // 1. 등록 및 인증 관련 (Connection Registration)
@@ -234,9 +248,10 @@ void    IRCServer::handlePart(Client& client, const paramVector& params)
 		return ;
 	}
 	std::vector<std::string> targets;
-	if (!splitMultiTarget(params[0], targets))
-	{
-		sendMsg(client.getFd(), errMsg(ERR_NEEDMOREPARAMS, client, "PART", "key param error"));
+	splitMultiTarget(params[0], targets);
+	if (targets.empty() && params.size() == 1)
+	{ // 파라미터 부족
+		sendMsg(client.getFd(), notEnoughParam(client, "PART"));
 		return ;
 	}
 	if (params.size() == 2)
@@ -261,8 +276,71 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 {
 }
 
+void IRCServer::kickProcess(Client &client, std::vector<std::string> &channels, std::vector<std::string> &targets, const std::string &reason)
+{
+	std::vector<std::string>::iterator channelIter = channels.begin();
+	std::vector<std::string>::iterator channelIterEnd = channels.end();
+	std::vector<std::string>::iterator targetlIter = targets.begin();
+	std::vector<std::string>::iterator targetlIterEnd = targets.end();
+	std::string msg;
+	std::string trailing;
+
+	/* trailing 설정. */
+	if (reason.empty())
+		trailing = client.getNickName(); // 비었으면 오퍼닉.
+	else
+		trailing = reason; // 있으면 그대로.
+
+	if (channels.size() == 1)
+		while (targetlIter != targetlIterEnd)
+		{
+			msg = goodMsg(client, "KICK", *channelIter, *targetlIter, trailing);
+			m_channelManager.kickClientFromChannel(client, *channelIter, *targetlIter, msg);
+			targetlIter++;
+		}
+	else
+		while (channelIter != channelIterEnd)
+		{
+			msg = goodMsg(client, "KICK", *channelIter, *targetlIter, trailing);
+			m_channelManager.kickClientFromChannel(client, *channelIter, *targetlIter, msg);
+			channelIter++;
+			targetlIter++;
+		}
+}
 void    IRCServer::handleKick(Client& client, const paramVector& params)
 {
+	if (params.size() < 2)
+	{
+		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
+	}
+	
+	/*서버 멀티타겟 스플릿.*/
+	std::vector<std::string> channels;
+	splitMultiTarget(params[0], channels);
+	if (channels.empty())
+	{
+		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
+		return ;
+	}
+
+	/*유저 멀티타겟 스플릿.*/
+	std::vector<std::string> clients;
+	splitMultiTarget(params[1], clients);
+	if (clients.empty())
+	{
+		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
+		return ;
+	}
+
+	if (channels.size() != 1 && (channels.size() != clients.size()))
+	{ // 1대1 매칭인 경우 파라미터 에러 반환
+		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
+		return ;
+	}
+	if (params.size() < 3)
+		kickProcess(client, channels, clients, "");
+	else
+		kickProcess(client, channels, clients, params[2]);
 }
 
 void    IRCServer::handleMode(Client& client, const paramVector& params)
