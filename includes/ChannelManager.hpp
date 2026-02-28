@@ -21,6 +21,11 @@ class ChannelManager
 				Client &client,
 				const std::string &channelName,
 				const std::string &msg);
+		bool kickClientFromChannel(
+				Client &client,
+				const std::string &channelName,
+				const std::string &target,
+				const std::string &msg);
 //		bool removeClientFromChannel(
 //				Client &client,
 //				const std::string &msg,

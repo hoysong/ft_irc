@@ -1,5 +1,4 @@
 #include "IRCServer.hpp"
-#include "MyLibft.hpp"
 #include <vector>
 
 void getPrefix( std::string &line )

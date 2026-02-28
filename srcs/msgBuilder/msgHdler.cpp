@@ -72,6 +72,23 @@ std::string errMsg( e_ircError errCode,
 		<< "\r\n";
 	return (ss.str());
 }
+
+std::string goodMsg( e_ircError errCode,
+		Client &client,
+		const std::string &param1,
+		const std::string &param2,
+		const std::string &param3)
+{
+	std::stringstream ss;
+	ss << ":irc.ft_irc.42Gyeongsan.kr "
+		<< errCode << " "
+		<< client.getNickName() + " "
+		<< param1 + " "
+		<< param2 + " "
+		<< ":" + param3
+		<< "\r\n";
+	return (ss.str());
+}
 std::string goodMsg( Client &client,
 		const std::string &param1,
 		const std::string &param2)
@@ -94,6 +111,22 @@ std::string goodMsg( Client &client,
 	msg += param1 + " ";
 	msg += param2 + " ";
 	msg += ":" + param3;
+	msg += "\r\n";
+	return (msg);
+}
+
+std::string goodMsg( Client &client,
+		const std::string &param1,
+		const std::string &param2,
+		const std::string &param3,
+		const std::string &param4)
+{
+	std::string msg;
+	msg += client.getMsgPrefix() + " ";
+	msg += param1 + " ";
+	msg += param2 + " ";
+	msg += param3 + " ";
+	msg += ":" + param4;
 	msg += "\r\n";
 	return (msg);
 }

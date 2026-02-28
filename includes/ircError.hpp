@@ -77,4 +77,24 @@ enum e_ircError {
 	ERR_USERSDONTMATCH = 502	// 다른 유저의 모드를 변경하거나 조회할 권한이 없음
 };
 
+enum e_rpl_numeric {
+	/* Registration / connection */
+	RPL_WELCOME = 1,	// 001
+	RPL_YOURHOST = 2,	// 002
+	RPL_CREATED = 3,	// 003
+	RPL_MYINFO = 4,	// 004
+
+	/* Channel / mode / topic */
+	RPL_CHANNELMODEIS = 324,	// 324
+	RPL_NOTOPIC = 331,	// 331
+	RPL_TOPIC = 332,	// 332
+
+	/* Invite */
+	RPL_INVITING = 341,	// 341
+
+	/* Names list (commonly sent after JOIN or NAMES) */
+	RPL_NAMREPLY = 353,	// 353
+	RPL_ENDOFNAMES = 366	// 366
+};
+
 #endif

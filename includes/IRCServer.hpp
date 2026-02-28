@@ -22,6 +22,7 @@ class IRCServer
 	private:
 		std::string m_startStamp;
 		std::string m_serverName;
+		std::string m_version;
 		const std::string m_passwd;
 		ListenSocket m_listenSocket;
 		ClientManager m_clientManager;
@@ -59,7 +60,7 @@ class IRCServer
 
 		// 3. 채널 조작 (Channel Operations)
 		void	handleJoin(Client& client, const paramVector& params);
-		void	joinProcess(Client &client, paramVector &servers, paramVector &keys);
+			void joinProcess(Client &client, paramVector &servers, paramVector &keys);
 		void	handlePart(Client& client, const paramVector& params);
 			void exitChannels(Client &client, std::vector<std::string> &targets, const std::string &msg);
 		void	handleTopic(Client& client, const paramVector& params);
@@ -67,6 +68,11 @@ class IRCServer
 		void	handleList(Client& client, const paramVector& params);
 		void	handleInvite(Client& client, const paramVector& params);
 		void	handleKick(Client& client, const paramVector& params);
+			void kickProcess(Client &client,
+					std::vector<std::string> &channels,
+					std::vector<std::string> &targets,
+					const std::string &reason);
+
 		void	handleMode(Client& client, const paramVector& params);
 
 		// 4. 서버 및 유저 정보 (Server Queries & User Info)

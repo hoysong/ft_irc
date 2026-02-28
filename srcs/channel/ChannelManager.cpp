@@ -1,5 +1,6 @@
 #include "ChannelManager.hpp"
 #include "Channel.hpp"
+#include "ircError.hpp"
 #include "msgHdler.hpp"
 #include <iostream>
 
@@ -49,21 +50,74 @@ bool ChannelManager::partClientFromChannel(
 {
 	std::cout << "[ChannelManager::partClientFromChannel()]" << std::endl;
 	chanMap::iterator iter = m_channels.find(channelName);
-	if (iter != m_channels.end())
+	if (iter == m_channels.end())
 	{
-		if (!(iter->second.removeMember(client, msg)))
-		{
-			sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client, iter->first, "You're not on that channel"));
-			return (false);
-		}
-	}
-	else if (iter == m_channels.end())
-	{
-		sendMsg(client.getFd(), errMsg(ERR_NOSUCHCHANNEL, client, iter->first, "No such channel"));
+		sendMsg(client.getFd(),
+				errMsg(
+					ERR_NOSUCHCHANNEL,
+					client,
+					iter->first,
+					"No such channel"));
 		return (false);
 	}
+
+	if (!(iter->second.removeMember(client, msg)))
+	{
+		sendMsg(client.getFd(),
+				errMsg(
+					ERR_NOTONCHANNEL,
+					client,
+					iter->first,"You're not on that channel"));
+		return (false);
+	}
+
 	if (iter->second.isChannelEmpty())
 		m_channels.erase(iter);
+	return (true);
+}
+
+bool ChannelManager::kickClientFromChannel(
+		Client &client,
+		const std::string &channelName,
+		const std::string &target,
+		const std::string &msg)
+{
+	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
+	if (iter == m_channels.end())
+	{
+		sendMsg(client.getFd(), errMsg(
+					ERR_NOSUCHCHANNEL,
+					client,
+					channelName,
+					"No such Channel"));
+		return (false);
+	}
+
+	if (!iter->second.findMember(target))
+	{
+		sendMsg(client.getFd(),
+				errMsg(
+					ERR_USERNOTINCHANNEL,
+					client,
+					target,
+					channelName,
+					"They aren't on that channel"));
+		return (false);
+	}
+
+	if (!iter->second.isChannelOper(client))
+	{
+		sendMsg(client.getFd(),
+				errMsg(
+					ERR_CHANOPRIVSNEEDED,
+					client,
+					channelName,
+					"You're not channel operator"));
+		return (false);
+	}
+
+	iter->second.removeMember(target, msg);
+
 	return (true);
 }
 
@@ -111,9 +165,9 @@ bool ChannelManager::findChannel( const std::string &channelName )
 
 ChannelManager::ChannelManager( void )
 {
-	std::cout << "[ChannelManger::ChannelManger()]" << std::endl;
+	std::cout << "[ChannelManager::ChannelManager()]" << std::endl;
 }
 ChannelManager::~ChannelManager( void )
 {
-	std::cout << "[ChannelManger::~ChannelManger()]" << std::endl;
+	std::cout << "[ChannelManager::~ChannelManager()]" << std::endl;
 }
