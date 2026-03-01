@@ -36,6 +36,7 @@ class Channel
 		bool isChannelOper( Client &client );
 
 		void broadcastNickChanged( Client &client, const std::string &newNick);
+		bool broadcastPrivmsg(Client &client, const std::string &msg);
 
 		std::string getPasswd( void );
 		std::string getChannelName( void );
