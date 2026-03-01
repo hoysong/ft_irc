@@ -1,6 +1,7 @@
 #include "ClientManager.hpp"
 #include "Channel.hpp"
 #include "MyLibft.hpp"
+#include "msgHdler.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include <cerrno>
@@ -82,15 +83,27 @@ bool ClientManager::isNickExists( const std::string &nickName ) const
 	return (true);
 }
 
+bool ClientManager::sendPrivmsg(Client &client, const std::string &name, const std::string &msg)
+{
+	std::map<std::string, Client *>::iterator iter = m_nameBased.find(name);
+	if (iter == m_nameBased.end())
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NOSUCHNICK, client, name, "No such nickname"));
+		return (false);
+	}
+	sendMsg(iter->second->getFd(), msg);
+	return (true);
+}
+
 /*sendMsg()는 send 실패를 봐야해서 Client가 존재하는지는 해당 함수 호출부에서 검사해야 함.*/
-bool ClientManager::sendMsg( int fd, const std::string &msg )
-{
-	return (MyLibft::sendMsg(fd, msg));
-}
-bool ClientManager::sendMsg( Client &client, const std::string &msg )
-{
-	return (sendMsg(client.getFd(), msg));
-}
+//bool ClientManager::sendMsg( int fd, const std::string &msg )
+//{
+//	return (MyLibft::sendMsg(fd, msg));
+//}
+//bool ClientManager::sendMsg( Client &client, const std::string &msg )
+//{
+//	return (sendMsg(client.getFd(), msg));
+//}
 
 
 /**********************/

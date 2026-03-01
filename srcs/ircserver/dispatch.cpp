@@ -1,6 +1,9 @@
 #include "IRCServer.hpp"
+#include "ircError.hpp"
 #include "modeMask.hpp"
+#include "msgHdler.hpp"
 #include <cctype>
+#include <set>
 #include <vector>
 
 // tailing 파라미터 split 함수.
@@ -214,8 +217,81 @@ void    IRCServer::handleOper(Client& client, const paramVector& params)
 // 2. 메시지 전송 (Message Sending)
 // ==============================================================================
 
+
+//| 411 | `ERR_NORECIPIENT` | `:No recipient given (PRIVMSG)` |
+//| 412 | `ERR_NOTEXTTOSEND` | `:No text to send` |
+//| 413 | `ERR_NOTOPLEVEL` | `<mask> :No toplevel domain specified` |
+//| 414 | `ERR_WILDTOPLEVEL` | `<mask> :Wildcard in toplevel domain` |
+//| 407 | `ERR_TOOMANYTARGETS` | `<target> :<error code> recipients. <abort message>` |
+//| 403 | `ERR_NOSUCHCHANNEL` | `<channel name> :No such channel` |
+
+//| 401 | `ERR_NOSUCHNICK` | `<nickname> :No such nick/channel` |
+
+
+
+void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, const std::string &msg)
+{
+	std::string current;
+	for(std::set<std::string>::iterator iter = targets.begin(); iter != targets.end(); iter++)
+	{
+		current = *iter;
+		std::string line = goodMsg(client, current, "PRIVMSG", msg);
+		if (current[0] == '#')
+		{ // server
+			Channel *channel;
+			if (m_channelManager.getChannel(current, channel))
+				channel->broadcastPrivmsg(client, line);
+			else
+			{
+				sendMsg(client.getFd(), errMsg( ERR_NOSUCHCHANNEL, client,
+							current, "No such channel"));
+			}
+		}
+		else
+		{ // client
+			m_clientManager.sendPrivmsg(client, current, line);
+		}
+	}
+	return ;
+}
+
 void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 {
+	if (params.empty())
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NORECIPIENT, client, "No recipient given (PRIVMSG)"));
+		return ;
+	}
+	else if (params.size() == 1)
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NOTEXTTOSEND, client, "No text to send"));
+		return ;
+	}
+	else if (params.size() > 2)
+	{
+		if (params[1].empty())
+		{
+			sendMsg(client.getFd(), errMsg(ERR_NOTEXTTOSEND, client, "No text to send"));
+			return ;
+		}
+	}
+
+	/* 타겟 스플릿, 고유한 타겟으로만 정제. */
+	std::vector<std::string> targets;
+	std::set<std::string> uniqueTargets;
+	splitMultiTarget(params[0], targets);
+	for(std::vector<std::string>::iterator iter = targets.begin(); iter != targets.end(); iter++)
+	{
+		if (!targets.empty())
+			uniqueTargets.insert(*iter);
+	}
+	if (targets.size() > 4)
+	{
+			sendMsg(client.getFd(), errMsg(ERR_TOOMANYTARGETS, client, params[0], "Too many targets (max: 4)"));
+			return ;
+	}
+
+	privmsgProcess(client, uniqueTargets, params[1]);
 }
 
 void    IRCServer::handleNotice(Client& client, const paramVector& params)

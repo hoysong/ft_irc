@@ -104,6 +104,28 @@ bool Channel::removeMember( Client &client, const std::string &msg )
 	return (true);
 }
 
+//| 404 | `ERR_CANNOTSENDTOCHAN` | `<channel name> :Cannot send to channel` |
+bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
+{
+	if (m_inviteOnly)
+	{
+		if (!findMember(client))
+		{
+			sendMsg(client.getFd(), errMsg(ERR_CANNOTSENDTOCHAN, client, m_channelName, "Cannot send to channel (+i)"));
+			return (false);
+		}
+	}
+
+	std::map<std::string, Client *>::iterator iter = this->m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = this->m_members.end();
+	while (iter != iter_end)
+	{
+		sendMsg(iter->second->getFd(), msg);
+		iter++;
+	}
+	return (true);
+}
+
 bool Channel::removeMember( const std::string &target, const std::string &msg)
 {
 	std::map<std::string, Client *>::iterator iter = m_members.find(target);

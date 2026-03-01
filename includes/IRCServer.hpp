@@ -56,6 +56,7 @@ class IRCServer
 
 		// 2. 메시지 전송 (Message Sending)
 		void	handlePrivmsg(Client& client, const paramVector& params);
+			void privmsgProcess(Client &client, std::set<std::string> uniqueTargets, const std::string &msg);
 		void	handleNotice(Client& client, const paramVector& params);
 
 		// 3. 채널 조작 (Channel Operations)

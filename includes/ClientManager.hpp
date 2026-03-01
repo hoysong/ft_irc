@@ -22,8 +22,10 @@ class ClientManager
 		bool setClientNickName( Client &client, const std::string &name );
 		bool isNickExists( const std::string &nickName ) const;
 
-		bool sendMsg( int fd, const std::string &msg );
-		bool sendMsg( Client &client, const std::string &msg );
+		bool sendPrivmsg(Client &client, const std::string &name, const std::string &msg);
+
+//		bool sendMsg( int fd, const std::string &msg );
+//		bool sendMsg( Client &client, const std::string &msg );
 		ClientManager( void );
 		~ClientManager( void );
 		void clientManagerAnnounce( void );
