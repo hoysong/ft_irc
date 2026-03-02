@@ -36,6 +36,16 @@ bool ClientManager::isMaxClient( void )
 	return (true);
 }
 
+#include <stdexcept>
+
+Client &ClientManager::getClient( const std::string &nickName )
+{
+	std::map<std::string, Client *>::iterator iter = m_nameBased.find(nickName);
+	if (iter == m_nameBased.end())
+		throw (std::runtime_error("FATAL: [ClientManager::getClient()]: failed to get client."));
+	return (*(iter->second));
+}
+
 ///* client에게 닉네임을 최초로 부여하는 함수. */
 //bool ClientManager::setClientNickName( int fd, const std::string &name )
 //{

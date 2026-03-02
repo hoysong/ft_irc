@@ -37,6 +37,7 @@ class Client
 		bool isRegistered( void );
 		bool isInvisible( void );
 		bool isWallopos( void );
+		bool isInChannel( const std::string &channelName );
 
 		std::string getHost( void );
 		std::string getNickName( void );

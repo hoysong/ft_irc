@@ -1,4 +1,5 @@
 #include "IRCServer.hpp"
+#include <cctype>
 #include <vector>
 
 void getPrefix( std::string &line )
@@ -121,6 +122,8 @@ void IRCServer::dispatch( Client &client, t_message &message )
 	(this->*(iter->second))(client, message.params);
 }
 
+#include <cctype>
+
 void IRCServer::processLine( Client &client, std::string &line)
 {
 	std::cout << "\t[IRCServer::processLine()]" << std::endl;
@@ -129,5 +132,9 @@ void IRCServer::processLine( Client &client, std::string &line)
 	tokenizeLine(line, message);
 	if (message.command.empty())
 		return ; // 비어있으면 조용히 지나가기.
+	std::string &command = message.command;
+	for (size_t i = 0; command[i] != '\0'; i++) {
+		command[i] = std::toupper(command[i]);
+	}
 	dispatch(client, message);
 }

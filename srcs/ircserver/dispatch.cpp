@@ -351,6 +351,37 @@ void    IRCServer::handleList(Client& client, const paramVector& params)
 
 void    IRCServer::handleInvite(Client& client, const paramVector& params)
 {
+	if (params.size() < 2)
+	{ // 파라미터 부족
+		sendMsg(client.getFd(), notEnoughParam(client, "INVITE"));
+		return ;
+	}
+	if (!m_clientManager.isNickExists(params[0]))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NOSUCHNICK, client, params[0], "No such nickanme"));
+		return ;
+	}
+	if (!client.isInChannel(params[1]))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client, params[1], "You're not on that channel"));
+		return ;
+	}
+	Channel *channel;
+	m_channelManager.getChannel(params[1], channel);
+	if(channel->findMember(params[1]))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_USERONCHANNEL, client, params[0], params[1], "is already on channel"));
+		return ;
+	}
+	if (!channel->isChannelOper(client.getNickName()))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_CHANOPRIVSNEEDED, client, params[1], "you're not channel operator"));
+		return ;
+	}
+	/*여기까지 예외처리 끝.*/
+	Client &invitedClient = m_clientManager.getClient(params[0]);
+	sendMsg(client.getFd(), noTrailingMsg(RPL_INVITING, client, params[0], params[1]));
+	sendMsg(invitedClient.getFd(), goodMsg(client, "INVITE", params[0], params[1]));
 }
 
 void IRCServer::kickProcess(Client &client, std::vector<std::string> &channels, std::vector<std::string> &targets, const std::string &reason)

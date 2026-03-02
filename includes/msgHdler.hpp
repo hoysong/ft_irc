@@ -49,6 +49,11 @@ std::string goodMsg( Client &client,
 		const std::string &param3,
 		const std::string &param4);
 
+std::string noTrailingMsg(e_rpl_numeric errCode,
+		Client &client,
+		const std::string &param1,
+		const std::string &param2);
+
 
 std::string notEnoughParam(Client &client, const std::string &command);
 

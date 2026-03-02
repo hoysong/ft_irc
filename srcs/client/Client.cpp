@@ -1,5 +1,6 @@
 #include "Client.hpp"
 #include "Channel.hpp"
+#include <map>
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include "MyLibft.hpp"
@@ -132,6 +133,14 @@ bool Client::isInvisible( void )
 bool Client::isWallopos( void )
 {
 	return (m_modWallops);
+}
+
+bool Client::isInChannel( const std::string &channelName )
+{
+	std::map<std::string, Channel *>::iterator iter = m_channels.find(channelName);
+	if (iter == m_channels.end())
+		return (false);
+	return (true);
 }
 
 void Client::setAuthed( void )

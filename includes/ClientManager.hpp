@@ -16,6 +16,7 @@ class ClientManager
 	public:
 		Client *addNewClient( int fd );
 		void removeClient( int fd, const std::string &msg );
+		Client &getClient( const std::string &nickName );
 
 		bool isMaxClient( void );
 //		bool setClientNickName( int fd, const std::string &name );

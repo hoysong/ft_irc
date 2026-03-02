@@ -5,7 +5,6 @@
 #include <iostream>
 #include <map>
 #include <set>
-#include <vector>
 
 void Channel::announce( void )
 {
