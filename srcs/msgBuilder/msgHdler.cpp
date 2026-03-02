@@ -136,6 +136,21 @@ std::string noTrailingMsg(e_rpl_numeric errCode,
 std::string goodMsg( e_rpl_numeric errCode,
 		Client &client,
 		const std::string &param1,
+		const std::string &param2)
+{
+	std::stringstream ss;
+	ss << ":irc.ft_irc.42Gyeongsan.kr "
+		<< errCode << " "
+		<< client.getNickName() + " "
+		<< param1 + " "
+		<< ":" + param2
+		<< "\r\n";
+	return (ss.str());
+}
+
+std::string goodMsg( e_rpl_numeric errCode,
+		Client &client,
+		const std::string &param1,
 		const std::string &param2,
 		const std::string &param3)
 {

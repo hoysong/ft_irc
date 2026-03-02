@@ -249,6 +249,10 @@ void Channel::setTopicMode( bool flag)
 {
 	this->m_topicOpOnly = flag;
 }
+void Channel::setTopic( const std::string &topic )
+{
+	m_topic = topic;
+}
 void Channel::setKeyMode( const std::string &value )
 {
 	this->m_passwd = value;
@@ -315,6 +319,11 @@ std::string Channel::getStringChannelLimit( void )
 int Channel::getIntChannelLimit( void )
 {
 	return (this->m_maxMembers);
+}
+
+std::string Channel::getTopic( void )
+{
+	return (m_topic);
 }
 
 #include <sstream>

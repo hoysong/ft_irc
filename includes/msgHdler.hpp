@@ -31,6 +31,10 @@ std::string chanModeDone(e_rpl_numeric errCode,
 		const std::string &param1,
 		const std::string &param2);
 
+std::string goodMsg( e_rpl_numeric errCode,
+		Client &client,
+		const std::string &param1,
+		const std::string &param2);
 std::string goodMsg(e_rpl_numeric errCode,
 		Client &client,
 		const std::string &param1,

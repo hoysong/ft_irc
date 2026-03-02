@@ -339,6 +339,35 @@ void    IRCServer::handlePart(Client& client, const paramVector& params)
 
 void    IRCServer::handleTopic(Client& client, const paramVector& params)
 {
+	if (params.empty())
+	{ // 파라미터 부족
+		sendMsg(client.getFd(), notEnoughParam(client, "TOPIC"));
+		return ;
+	}
+	if(!m_channelManager.findChannel(params[0]))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NOSUCHCHANNEL, client, params[0], "No such Channel"));
+		return ;
+	}
+	if (!client.isInChannel(params[0]))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client, params[0], "You're not on channel"));
+		return ;
+	}
+	Channel *channel;
+	m_channelManager.getChannel(params[0], channel);
+	if (params.size() == 1)
+	{
+		sendMsg(client.getFd(), goodMsg(RPL_TOPIC, client, params[0], channel->getTopic()));
+		return ;
+	}
+	if (channel->isTopicMode() && !channel->isChannelOper(client.getNickName()))
+	{
+		sendMsg(client.getFd(), errMsg(ERR_CHANOPRIVSNEEDED, client, params[1], "You're not an operator"));
+		return ;
+	}
+	channel->setTopic(params[2]);
+	channel->broadcastMsg(goodMsg(client, "TOPIC", params[0], params[1]));
 }
 
 void    IRCServer::handleNames(Client& client, const paramVector& params)

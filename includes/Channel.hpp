@@ -15,6 +15,7 @@ class Channel
 		typedef std::map<std::string, Client *> memberMap;
 		memberMap m_members;
 		std::set<Client *> m_opers;
+		std::string m_topic;
 
 		// need channel modes.
 		std::string m_passwd; // 비어있으면 -k
@@ -47,6 +48,7 @@ class Channel
 		bool isLimitMode( void );
 
 		void setInviteMode( bool );
+		void setTopic( const std::string &topic );
 		void setTopicMode( bool );
 		void setKeyMode( const std::string &value );
 		void setLimitMode( int value );
@@ -62,6 +64,7 @@ class Channel
 		Client &getChannelMember( const std::string &nickName );
 		std::string getStringChannelLimit( void );
 		int getIntChannelLimit( void );
+		std::string getTopic( void );
 		std::string modeToString( void );
 
 		Channel &setChannelName( const std::string &name );
