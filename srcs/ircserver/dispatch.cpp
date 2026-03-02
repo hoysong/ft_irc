@@ -4,6 +4,7 @@
 #include "msgHdler.hpp"
 #include <cctype>
 #include <set>
+#include <sys/socket.h>
 #include <vector>
 
 // tailing 파라미터 split 함수.
@@ -419,9 +420,7 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 		kickProcess(client, channels, clients, params[2]);
 }
 
-void    IRCServer::handleMode(Client& client, const paramVector& params)
-{
-}
+
 
 // ==============================================================================
 // 4. 서버 및 유저 정보 (Server Queries & User Info)

@@ -4,6 +4,7 @@
 # include <sstream>
 # include <iostream>
 # include <cerrno>
+# include <sys/socket.h>
 
 class MyLibft
 {

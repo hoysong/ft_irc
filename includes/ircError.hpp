@@ -85,6 +85,7 @@ enum e_rpl_numeric {
 	RPL_MYINFO = 4,	// 004
 
 	/* Channel / mode / topic */
+	RPL_UMODEIS = 221,
 	RPL_CHANNELMODEIS = 324,	// 324
 	RPL_NOTOPIC = 331,	// 331
 	RPL_TOPIC = 332,	// 332

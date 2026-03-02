@@ -1,4 +1,6 @@
 #include "Client.hpp"
+#include "Channel.hpp"
+#include "ircError.hpp"
 #include "msgHdler.hpp"
 #include <iostream>
 #include <string>
@@ -73,7 +75,50 @@ std::string errMsg( e_ircError errCode,
 	return (ss.str());
 }
 
-std::string goodMsg( e_ircError errCode,
+
+std::string rplUserMode(Client &client)
+{
+	std::stringstream ss;
+	ss << ":irc.ft_irc.42Gyeongsan.kr "
+		<< RPL_UMODEIS << " "
+		<< client.getNickName() + " "
+		<< ":+";
+	if (client.isInvisible())
+		ss << 'i';
+	if (client.isWallopos())
+		ss << 'w';
+	ss << "\r\n";
+	return (ss.str());
+}
+
+std::string rplChannelMode(Client &client, Channel &channel)
+{
+	std::stringstream ss;
+	ss << ":irc.ft_irc.42Gyeongsan.kr "
+		<< RPL_CHANNELMODEIS << " "
+		<< client.getNickName() + " "
+		<< channel.getChannelName() + " "
+		<< channel.modeToString();
+	ss << "\r\n";
+	return (ss.str());
+}
+
+std::string chanModeDone(e_rpl_numeric errCode,
+		Client &client,
+		const std::string &param1,
+		const std::string &param2)
+{
+	std::stringstream ss;
+	ss << ":irc.ft_irc.42Gyeongsan.kr "
+		<< errCode << " "
+		<< client.getNickName() + " "
+		<< param1 + " "
+		<< param2
+		<< "\r\n";
+	return (ss.str());
+}
+
+std::string goodMsg( e_rpl_numeric errCode,
 		Client &client,
 		const std::string &param1,
 		const std::string &param2,
@@ -89,6 +134,7 @@ std::string goodMsg( e_ircError errCode,
 		<< "\r\n";
 	return (ss.str());
 }
+
 std::string goodMsg( Client &client,
 		const std::string &param1,
 		const std::string &param2)

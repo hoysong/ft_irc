@@ -75,6 +75,19 @@ class IRCServer
 					const std::string &reason);
 
 		void	handleMode(Client& client, const paramVector& params);
+			void modeProcess(Client &client,
+					const std::string &target,
+					const std::string &modes,
+					std::vector<std::string> &modeTargets);
+			void setChannelMode(Client &client,
+					const std::string &target,
+					const std::string &modes,
+					std::vector<std::string> &modeTargets);
+			void setCliientMode(Client &client,
+					const std::string &target,
+					const std::string &modes,
+					std::vector<std::string> &modeTargets);
+
 
 		// 4. 서버 및 유저 정보 (Server Queries & User Info)
 		void	handleWho(Client& client, const paramVector& params);

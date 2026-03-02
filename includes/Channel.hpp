@@ -18,9 +18,9 @@ class Channel
 
 		// need channel modes.
 		std::string m_passwd; // 비어있으면 -k
-		bool m_inviteOnly;
-		bool m_topicOpOnly;
-		int m_maxMembers;
+		bool m_inviteOnly; // mode i
+		bool m_topicOpOnly; // mode t
+		int m_maxMembers; // mode l(limit).
 	public:
 		Channel( void );
 		~Channel( void );
@@ -28,19 +28,40 @@ class Channel
 		bool addMember( Client &client, const std::string &passwd);
 		bool removeMember( Client &client, const std::string &msg);
 		bool removeMember( const std::string &target, const std::string &msg);
+
 		bool addChannelOper( Client &client);
+		bool addChannelOper( const std::string &nickName );
 		bool removeChannelOper( Client &client);
+		bool removeChannelOper( const std::string &nickName );
+
 		bool findMember( Client &client );
 		bool findMember( const std::string &name );
+
 		bool isChannelEmpty( void );
 		bool isChannelOper( Client &client );
+		bool isChannelOper( const std::string &nickName );
+		bool isInviteMode( void );
+		bool isTopicMode( void );
+		bool isKeyMode( void );
+		bool isLimitMode( void );
+
+		void setInviteMode( bool );
+		void setTopicMode( bool );
+		void setKeyMode( const std::string &value );
+		void setLimitMode( int value );
+		bool setLimitMode( const std::string &value );
 
 		void broadcastNickChanged( Client &client, const std::string &newNick);
 		bool broadcastPrivmsg(Client &client, const std::string &msg);
+		void broadcastMsg( const std::string &msg );
 
 		std::string getPasswd( void );
 		std::string getChannelName( void );
 		memberMap &getChannelMembers( void );
+		Client &getChannelMember( const std::string &nickName );
+		std::string getStringChannelLimit( void );
+		int getIntChannelLimit( void );
+		std::string modeToString( void );
 
 		Channel &setChannelName( const std::string &name );
 		Channel &assignPasswd( const std::string &passwd );

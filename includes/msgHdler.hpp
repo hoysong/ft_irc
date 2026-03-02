@@ -4,6 +4,7 @@
 # include <string>
 
 class Client;
+class Channel;
 
 bool sendMsg( int fd, const std::string &buf );
 
@@ -22,11 +23,19 @@ std::string errMsg( e_ircError errCode,
 		std::string param2,
 		std::string param3);
 
-std::string goodMsg(e_ircError errCode,
+std::string rplUserMode(Client &client);
+std::string rplChannelMode(Client &client, Channel &channel);
+
+std::string chanModeDone(e_rpl_numeric errCode,
 		Client &client,
 		const std::string &param1,
 		const std::string &param2);
 
+std::string goodMsg(e_rpl_numeric errCode,
+		Client &client,
+		const std::string &param1,
+		const std::string &param2,
+		const std::string &param3);
 std::string goodMsg( Client &client,
 		const std::string &param1,
 		const std::string &param2);
@@ -39,6 +48,7 @@ std::string goodMsg( Client &client,
 		const std::string &param2,
 		const std::string &param3,
 		const std::string &param4);
+
 
 std::string notEnoughParam(Client &client, const std::string &command);
 

@@ -1,7 +1,6 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 # include <sys/socket.h> // recv(), ssize_t.
-# include <vector>
 # include <string>
 # include <map>
 
@@ -36,6 +35,8 @@ class Client
 
 		bool isAuthed( void ); // client가 등록되었는지 확인합니다.
 		bool isRegistered( void );
+		bool isInvisible( void );
+		bool isWallopos( void );
 
 		std::string getHost( void );
 		std::string getNickName( void );

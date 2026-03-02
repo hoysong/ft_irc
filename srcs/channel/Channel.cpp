@@ -1,8 +1,11 @@
 #include "Channel.hpp"
 #include "IRCServer.hpp"
 #include "Client.hpp"
+#include <exception>
 #include <iostream>
+#include <map>
 #include <set>
+#include <vector>
 
 void Channel::announce( void )
 {
@@ -29,6 +32,17 @@ void Channel::announce( void )
 	{
 		(*operIter)->announce();
 		operIter++;
+	}
+}
+
+void Channel::broadcastMsg( const std::string &msg )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
+	{
+		sendMsg(iter->second->getFd(), msg);
+		iter++;
 	}
 }
 
@@ -142,12 +156,35 @@ bool Channel::addChannelOper( Client &client)
 	m_opers.insert(&client);
 	return (true);
 }
+
+bool Channel::addChannelOper( const std::string &nickName )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.find(nickName);
+	if (iter == m_members.end())
+		return (false);
+	std::set<Client *>::iterator operIter = m_opers.find(iter->second);
+	if (operIter != m_opers.end())
+		return (false);
+	m_opers.insert(iter->second);
+	return (true);
+}
 bool Channel::removeChannelOper( Client &client)
 {
 	std::set<Client *>::iterator iter = m_opers.find(&client);
 	if (iter == m_opers.end())
 		return (false); // 이미 없음.
 	m_opers.erase(&client);
+	return (true);
+}
+bool Channel::removeChannelOper( const std::string &nickName )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.find(nickName);
+	if (iter == m_members.end())
+		return (false);
+	std::set<Client *>::iterator operIter = m_opers.find(iter->second);
+	if (operIter == m_opers.end())
+		return (false);
+	m_opers.erase(iter->second);
 	return (true);
 }
 
@@ -178,6 +215,63 @@ bool Channel::isChannelOper( Client &client )
 		return (false);
 	return (true);
 }
+bool Channel::isChannelOper( const std::string &nickName )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.find(nickName);
+	if (iter == m_members.end())
+		return (false);
+	std::set<Client *>::iterator operIter = m_opers.find(iter->second);
+	if (operIter == m_opers.end())
+		return (false);
+	return (true);
+}
+bool Channel::isInviteMode( void )
+{
+	return (m_inviteOnly);
+}
+bool Channel::isTopicMode( void )
+{
+	return (m_topicOpOnly);
+}
+bool Channel::isKeyMode( void )
+{
+	return (!m_passwd.empty());
+}
+bool Channel::isLimitMode( void )
+{
+	return (m_maxMembers >= 0);
+}
+
+void Channel::setInviteMode( bool flag)
+{
+	this->m_inviteOnly = flag;
+}
+void Channel::setTopicMode( bool flag)
+{
+	this->m_topicOpOnly = flag;
+}
+void Channel::setKeyMode( const std::string &value )
+{
+	this->m_passwd = value;
+}
+void Channel::setLimitMode( int value )
+{
+	this->m_maxMembers = value;
+}
+#include <sstream>
+#include "MyLibft.hpp"
+bool Channel::setLimitMode( const std::string &value )
+{
+	if (value.size() > 3)
+		return (false);
+	try {
+		m_maxMembers = MyLibft::myAtoi(value);
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+		return (false);
+	}
+	return (true);
+}
 
 Channel &Channel::setChannelName( const std::string &name )
 {
@@ -206,6 +300,50 @@ std::map<std::string, Client *> &Channel::getChannelMembers( void )
 std::string Channel::getChannelName( void )
 {
 	return (m_channelName);
+}
+Client &Channel::getChannelMember( const std::string &nickName )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.find(nickName);
+	return (*iter->second);
+}
+
+std::string Channel::getStringChannelLimit( void )
+{
+	std::stringstream ss;
+	ss << m_maxMembers;
+	return (ss.str());
+}
+int Channel::getIntChannelLimit( void )
+{
+	return (this->m_maxMembers);
+}
+
+#include <sstream>
+std::string Channel::modeToString( void )
+{
+	std::string modes = "+";
+	std::stringstream ss;
+	if (!m_passwd.empty())
+	{
+		modes += 'k';
+		ss << " " << m_passwd;
+	}
+	if (m_inviteOnly)
+	{
+		modes += 'i';
+	}
+	if (m_topicOpOnly)
+	{
+		modes += 't';
+	}
+	if (m_maxMembers >= 0)
+	{
+		modes += 'l';
+		ss << " ";
+		ss << m_maxMembers;
+	}
+	modes += ss.str();
+	return (modes);
 }
 
 // ======================================================================

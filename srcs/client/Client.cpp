@@ -125,6 +125,15 @@ bool Client::isRegistered( void )
 	return (m_registered);
 }
 
+bool Client::isInvisible( void )
+{
+	return (m_modInvisible);
+}
+bool Client::isWallopos( void )
+{
+	return (m_modWallops);
+}
+
 void Client::setAuthed( void )
 {
 	m_authed = true;
