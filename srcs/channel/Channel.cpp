@@ -2,10 +2,11 @@
 #include "Msg.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
-#include <exception>
+#include "MyLibft.hpp"
 #include <iostream>
 #include <map>
 #include <set>
+#include <sstream>
 
 void Channel::announce( void )
 {
@@ -265,18 +266,11 @@ void Channel::setLimitMode( int value )
 {
 	this->m_maxMembers = value;
 }
-#include <sstream>
-#include "MyLibft.hpp"
 bool Channel::setLimitMode( const std::string &value )
 {
-	if (value.size() > 3)
+	int limit;
+	if (!MyLibft::aToInt(value, limit))
 		return (false);
-	try {
-		m_maxMembers = MyLibft::myAtoi(value);
-	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
-		return (false);
-	}
 	return (true);
 }
 

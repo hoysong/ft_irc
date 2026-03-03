@@ -3,10 +3,10 @@
 #include "ircError.hpp"
 #include "modeMask.hpp"
 #include <cctype>
-#include <set>
 #include <sys/socket.h>
 #include <vector>
 #include "ircError.hpp"
+#include <iostream>
 
 // tailing 파라미터 split 함수.
 extern bool splitUntilChar(std::string &line, std::string seperator, std::string &result);

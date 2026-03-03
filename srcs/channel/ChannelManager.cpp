@@ -1,7 +1,6 @@
 #include "ChannelManager.hpp"
 #include "Channel.hpp"
 #include "IServerController.hpp"
-#include "ircError.hpp"
 #include "Msg.hpp"
 #include <iostream>
 #include <utility>

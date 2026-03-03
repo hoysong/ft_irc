@@ -1,6 +1,7 @@
 #include "IRCServer.hpp"
 #include "MyLibft.hpp"
-#include <stdexcept>
+//#include "MyLibft.hpp"
+#include <iostream>
 
 /*분산 책임 클래스 설계.
  * ListenSocket은 정말 연결요청만 받는 클래스로 설계합니다.
@@ -10,6 +11,26 @@
  * + ClientManager::addNewClient( Server server, fd ); 이런식으로 하면 되나?
  */
 
+static void startErrMsg( void )
+{
+	std::cerr << "서버 구동: ./ircserv [port] [passwd]" << std::endl;
+	std::cout << "[passwd]를 구성할 수 있는 문자들은 다음과 같습니다." << std::endl;
+	std::cout << "├─ A ~ Z" << std::endl;
+	std::cout << "├─ a ~ z" << std::endl;
+	std::cout << "└─ 0 ~ 9" << std::endl;
+}
+
+#include <cctype>
+static bool paswdVldChk(const std::string &passwd)
+{
+	for (size_t i = 0; passwd[i] != '\0'; i++)
+	{
+		if (!std::isalnum(static_cast<unsigned char>(passwd[i])))
+			return (false);
+	}
+	return (true);
+}
+
 int	main(int argc, char **argv)
 {
 	/* 인자 유효성 체크가 추후 필요합니다.
@@ -17,15 +38,25 @@ int	main(int argc, char **argv)
 	 * 2. 숫자가 아닌 문자의 감지.
 	 * 3. 인자는 오직 port, passwd만 받습니다.
 	 */
+	int port;
 	if (argc != 3)
 	{ 
-		std::cerr << "유효하지 않은 인자입니다." << std::endl;
-		std::cerr << "./ircserv [port] [passwd]" << std::endl;
+		startErrMsg();
 		return (1);
 	}
+	else if (!MyLibft::aToInt(argv[1], port))
+	{
+		startErrMsg();
+		return (1);
+	}
+	else if (!paswdVldChk(argv[2]))
+	{
+		startErrMsg();
+		return (1);
+	}
+
 	try
 	{
-		int port = MyLibft::myAtoi(argv[1]);
 		IRCServer ircServ("0.0.0.0", port, argv[2]);
 		ircServ.serverLoop();
 	}

@@ -1,7 +1,6 @@
 #ifndef IRCSERVER_HPP
 # define IRCSERVER_HPP
 //# include "msgHdler.hpp"
-#include "Msg.hpp"
 # include "ListenSocket.hpp"
 # include "EpollManager.hpp"
 # include "ClientManager.hpp"
@@ -9,6 +8,7 @@
 # include "IServerController.hpp"
 # include <string>
 # include <map>
+# include <vector>
 
 # define MAX_EVENTS 10
 

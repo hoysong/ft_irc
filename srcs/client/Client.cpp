@@ -88,9 +88,9 @@ std::string	Client::getHost(void)
 std::string Client::getMsgPrefix( void )
 {
 	std::string host = getHost();
-	std::stringstream ss;
-	ss << m_nickName << "!" << m_userName << "@" << host;
-	return (ss.str());
+	std::string result;
+	result += m_nickName + "!" + m_userName + "@" + host;
+	return (result);
 }
 
 std::map<std::string, Channel *> Client::getJoinedChannel( void )

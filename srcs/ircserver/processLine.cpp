@@ -1,6 +1,8 @@
 #include "IRCServer.hpp"
+#include "Msg.hpp"
 #include <cctype>
 #include <vector>
+#include <iostream>
 
 void getPrefix( std::string &line )
 {
