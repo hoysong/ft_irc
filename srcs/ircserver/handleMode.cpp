@@ -205,6 +205,7 @@ void IRCServer::setChannelMode(Client &client,
 					.addParam(client.getNickName())
 					.addParam(target)
 					.addParam(trailingBuffer)
+					.trailing(false)
 					.serialize()
 				);
 		}
