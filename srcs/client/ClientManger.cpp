@@ -1,5 +1,6 @@
 #include "ClientManager.hpp"
 #include "Channel.hpp"
+#include "IServerController.hpp"
 #include "Msg.hpp"
 //#include "MyLibft.hpp"
 #include <unistd.h> // close().
@@ -72,11 +73,11 @@ bool ClientManager::setClientNickName( Client &client, const std::string &name )
 	if (nameIter != m_nameBased.end())
 		return (false); // 이미 존재하는 이름입니다.
 
-	/*m_nameBased에 이미 해당 클라이언트가 있는지?*/
+	/*m_nameBased에 이름 변경을 시도하는 클라이언트가 있는가?*/
 	nameIter = m_nameBased.find(client.getNickName());
 	if (nameIter != m_nameBased.end())
 	{ // 이미 이름기반 map에 존재함.
-		m_nameBased.erase(nameIter);
+		m_nameBased.erase(nameIter); // 삭제해주기.
 	}
 	client.assignNickName(name);
 	m_nameBased[name] = &client;
@@ -127,7 +128,7 @@ Client *ClientManager::addNewClient( int fd )
 	Client *newClient = NULL;
 	try
 	{
-		newClient = new Client(fd);
+		newClient = new Client(fd, m_server);
 	}
 	catch(std::bad_alloc &e)
 	{
@@ -193,7 +194,7 @@ void ClientManager::removeClient( int fd, const std::string &msg )
 /* constructor/destructor. */
 /***************************/
 
-ClientManager::ClientManager( void )
+ClientManager::ClientManager( IServerController &ircServer ) : m_server(ircServer)
 {
 };
 ClientManager::~ClientManager( void )

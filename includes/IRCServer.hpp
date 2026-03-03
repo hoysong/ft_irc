@@ -6,6 +6,7 @@
 # include "EpollManager.hpp"
 # include "ClientManager.hpp"
 # include "ChannelManager.hpp"
+# include "IServerController.hpp"
 # include <string>
 # include <map>
 
@@ -18,7 +19,7 @@ typedef struct s_message
 	std::vector<std::string> params;
 } t_message;
 
-class IRCServer
+class IRCServer : public IServerController
 {
 	private:
 		std::string m_startStamp;

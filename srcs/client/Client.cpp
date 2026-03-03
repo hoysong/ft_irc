@@ -3,6 +3,7 @@
 #include <map>
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
+#include "IServerController.hpp"
 #include "MyLibft.hpp"
 
 void Client::announce( void )
@@ -215,7 +216,8 @@ bool Client::popLine( std::string &line )
 /***************************/
 /* constcurtor/destructor. */
 /***************************/
-Client::Client( int fd ) :
+Client::Client( int fd , IServerController &ircServer ) :
+	m_server(ircServer),
 	m_fd(fd),
 	m_authed(false),
 	m_registered(false),

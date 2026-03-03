@@ -16,173 +16,157 @@ void IRCServer::setChannelMode(Client &client,
 	}
 	if (modes.empty())
 	{ // 모드 조회
-		Msg()
-			.setPrefix(SERVER_PREFIX)
-			.numeric(RPL_CHANNELMODEIS)
-			.addParam(client.getNickName())
-			.addParam(channel->getChannelName())
-			.addParam(channel->modeToString())
-			.trailing(false)
-			.sendTo(client.getFd());
+		Msg().rplChannelModeIs(client.getNickName(), channel->getChannelName(), channel->modeToString()).sendTo(client.getFd());
 		return ;
 	}
-	else
-	{ // 모드 적용
-		if(!channel->findMember(client))
-		{ // 멤버가 아님.
-			Msg()
-				.setPrefix(SERVER_PREFIX)
-				.numeric(ERR_NOTONCHANNEL)
-				.addParam(client.getNickName())
-				.addParam(target)
-				.addParam("You're not on that channel")
-				.sendTo(client.getFd());
-			return ;
-		}
-		else if (!channel->isChannelOper(client))
-		{ // 오퍼가 아님.
-			Msg().errChanOpPrivsNeeded(client.getNickName(), target).sendTo(client.getFd());
-			return ;
-		}
-		bool add = false;
-		bool remove = false;
-		std::vector<std::string>::iterator iter = modeTargets.begin();
-		std::vector<std::string>::iterator iter_end = modeTargets.end();
-		std::string trailingBuffer;
-		std::vector<std::string> params;
-		for(size_t i = 0; modes[i] != '\0'; i++)
+	if(!channel->findMember(client))
+	{ // 멤버가 아님.
+		Msg().errNotOnChannel(client.getNickName(), target).sendTo(client.getFd());
+		return ;
+	}
+	else if (!channel->isChannelOper(client))
+	{ // 오퍼가 아님.
+		Msg().errChanOpPrivsNeeded(client.getNickName(), target).sendTo(client.getFd());
+		return ;
+	}
+	bool add = false;
+	bool remove = false;
+	std::vector<std::string>::iterator iter = modeTargets.begin();
+	std::vector<std::string>::iterator iter_end = modeTargets.end();
+	std::string trailingBuffer;
+	std::vector<std::string> params;
+	for(size_t i = 0; modes[i] != '\0'; i++)
+	{
+		if (modes[i] == '+' || modes[i] == '-')
 		{
-			if (modes[i] == '+' || modes[i] == '-')
+			if (modes[i] == '+')
 			{
-				if (modes[i] == '+')
-				{
-					add = true;
-					remove = false;
-				}
-				else if (modes[i] == '-')
-				{
-					add = false;
-					remove = true;
-				}
-				if (trailingBuffer.empty())
+				add = true;
+				remove = false;
+			}
+			else if (modes[i] == '-')
+			{
+				add = false;
+				remove = true;
+			}
+			if (trailingBuffer.empty())
+				trailingBuffer += modes[i];
+			else if (!trailingBuffer.empty())
+			{
+				if (*(trailingBuffer.rbegin()) == '-' || *(trailingBuffer.rbegin()) == '+')
+					*(trailingBuffer.rbegin()) = modes[i];
+				else
 					trailingBuffer += modes[i];
-				else if (!trailingBuffer.empty())
-				{
-					if (*(trailingBuffer.rbegin()) == '-' || *(trailingBuffer.rbegin()) == '+')
-						*(trailingBuffer.rbegin()) = modes[i];
-					else
-						trailingBuffer += modes[i];
+			}
+		}
+		else if (modes[i] == 'i')
+		{
+			if (!channel->isInviteMode() && add)
+			{
+				channel->setInviteMode(true);
+				trailingBuffer += "i";
+			}
+			else if (channel->isInviteMode() && remove)
+			{
+				channel->setInviteMode(false);
+				trailingBuffer += "i";
+			}
+		}
+		else if (modes[i] == 't')
+		{
+			if (!channel->isTopicMode() && add)
+			{
+				channel->setTopicMode(true);
+				trailingBuffer += "t";
+			}
+			else if (channel->isTopicMode() && remove)
+			{
+				channel->setTopicMode(false);
+				trailingBuffer += "t";
+			}
+		}
+		else if (modes[i] == 'k')
+		{
+			if (iter != iter_end)
+			{
+				if (!channel->isKeyMode() && add)
+				{ // 비밀번호 설정
+					channel->setKeyMode(*iter);
+					trailingBuffer += "k";
+					params.push_back(*iter);
+					iter++;
+				}
+				else if (channel->isKeyMode() && add && (channel->getPasswd() != *iter))
+				{ // 비밀번호 변경 기존과 다른 경우에만 수행.
+					channel->setKeyMode(*iter);
+					trailingBuffer += "k";
+					params.push_back(*iter);
+					iter++;
+				}
+				else if (channel->isKeyMode() && channel->getPasswd() == *iter && remove)
+				{ // 비밀번호 삭제
+					channel->setKeyMode("");
+					trailingBuffer += "k";
+					params.push_back(*iter);
+					iter++;
 				}
 			}
-			else if (modes[i] == 'i')
-			{
-				if (!channel->isInviteMode() && add)
+		}
+		else if (modes[i] == 'o')
+		{
+			if (iter != iter_end && channel->findMember(*iter))
+			{ // 멤버 있으면 실행.
+				if (!channel->isChannelOper(*iter) && add)
 				{
-					channel->setInviteMode(true);
-					trailingBuffer += "i";
+					channel->addChannelOper(*iter);
+					trailingBuffer += "o";
+					params.push_back(*iter);
+					iter++;
 				}
-				else if (channel->isInviteMode() && remove)
+				else if (channel->isChannelOper(*iter) && remove)
 				{
-					channel->setInviteMode(false);
-					trailingBuffer += "i";
-				}
-			}
-			else if (modes[i] == 't')
-			{
-				if (!channel->isTopicMode() && add)
-				{
-					channel->setTopicMode(true);
-					trailingBuffer += "t";
-				}
-				else if (channel->isTopicMode() && remove)
-				{
-					channel->setTopicMode(false);
-					trailingBuffer += "t";
+					channel->addChannelOper(*iter);
+					trailingBuffer += "o";
+					params.push_back(*iter);
+					iter++;
 				}
 			}
-			else if (modes[i] == 'k')
+		}
+		else if (modes[i] == 'l')
+		{
+			if (iter != iter_end)
 			{
-				if (iter != iter_end)
+				if (!channel->isLimitMode() && add)
 				{
-					if (!channel->isKeyMode() && add)
-					{ // 비밀번호 설정
-						channel->setKeyMode(*iter);
-						trailingBuffer += "k";
-						params.push_back(*iter);
-						iter++;
-					}
-					else if (channel->isKeyMode() && add && (channel->getPasswd() != *iter))
-					{ // 비밀번호 변경 기존과 다른 경우에만 수행.
-						channel->setKeyMode(*iter);
-						trailingBuffer += "k";
-						params.push_back(*iter);
-						iter++;
-					}
-					else if (channel->isKeyMode() && channel->getPasswd() == *iter && remove)
-					{ // 비밀번호 삭제
-						channel->setKeyMode("");
-						trailingBuffer += "k";
-						params.push_back(*iter);
-						iter++;
-					}
-				}
-			}
-			else if (modes[i] == 'o')
-			{
-				if (iter != iter_end && channel->findMember(*iter))
-				{ // 멤버 있으면 실행.
-					if (!channel->isChannelOper(*iter) && add)
+					if (channel->setLimitMode(*iter))
 					{
-						channel->addChannelOper(*iter);
-						trailingBuffer += "o";
-						params.push_back(*iter);
-						iter++;
-					}
-					else if (channel->isChannelOper(*iter) && remove)
-					{
-						channel->addChannelOper(*iter);
-						trailingBuffer += "o";
-						params.push_back(*iter);
-						iter++;
-					}
-				}
-			}
-			else if (modes[i] == 'l')
-			{
-				if (iter != iter_end)
-				{
-					if (!channel->isLimitMode() && add)
-					{
-						if (channel->setLimitMode(*iter))
-						{
-							trailingBuffer += "l";
-							iter++;
-							params.push_back(channel->getStringChannelLimit());
-						}
-					}
-					else if (channel->isLimitMode() && remove)
-					{
-						channel->setLimitMode("-1");
 						trailingBuffer += "l";
 						iter++;
+						params.push_back(channel->getStringChannelLimit());
 					}
+				}
+				else if (channel->isLimitMode() && remove)
+				{
+					channel->setLimitMode("-1");
+					trailingBuffer += "l";
+					iter++;
 				}
 			}
 		}
-		if (!trailingBuffer.empty())
-		{ // 변경 완료 메시지.
-			for(std::vector<std::string>::iterator iter = params.begin(); iter != params.end(); iter++)
-				trailingBuffer += " " + *iter;
-			channel->broadcastMsg(
-					Msg()
-					.setPrefix(client.getMsgPrefix())
-					.addParam(client.getNickName())
-					.addParam(target)
-					.addParam(trailingBuffer)
-					.trailing(false)
-					.serialize()
-				);
-		}
+	}
+	if (!trailingBuffer.empty())
+	{ // 변경 완료 메시지.
+		for(std::vector<std::string>::iterator iter = params.begin(); iter != params.end(); iter++)
+			trailingBuffer += " " + *iter;
+		channel->broadcastMsg(
+				Msg()
+				.setPrefix(client.getMsgPrefix())
+				.addParam(client.getNickName())
+				.addParam(target)
+				.addParam(trailingBuffer)
+				.trailing(false)
+				.serialize()
+			);
 	}
 }
 

@@ -3,6 +3,7 @@
 #include <vector>
 #include <cerrno>
 #include <sys/socket.h>
+#include "ircError.hpp"
 
 bool sendMsg( int fd, const std::string &buf )
 {
@@ -365,3 +366,13 @@ Msg & Msg::rplEndOfNames(const std::string &nick,
     return (*this);
 }
 
+Msg & Msg::rplChannelModeIs(const std::string &nick, const std::string &channelName, const std::string &modes)
+{
+    setPrefix(SERVER_PREFIX);
+    numeric(RPL_CHANNELMODEIS);
+    addParam(nick);
+    addParam(channelName);
+    addParam(modes);
+    trailing(false);
+    return (*this);
+}

@@ -208,7 +208,9 @@ IRCServer::IRCServer(std::string ip, int port, std::string passwd) :
 	m_serverName("irc.ft_irc.42Gyeongsan.kr"),
 	m_version("ft_irc-0.5"),
 	m_passwd(passwd),
-	m_listenSocket(ip, port)
+	m_listenSocket(ip, port),
+	m_clientManager(*this),
+	m_channelManager(*this)
 {
 	std::cout << "[IRCServer::IRCServer()]" << std::endl;
 	m_startStamp = makeStartStamp();

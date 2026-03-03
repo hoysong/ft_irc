@@ -14,7 +14,7 @@ class Msg
 		std::vector<std::string> m_params;
 		bool m_trailing;
 	public:
-		/*직접 조립하는 경우 사용가능.*/
+		/*직접 메시지를 빌드하는 경우 사용가능.*/
 		Msg( void );
 		Msg & setPrefix( const std::string &prefix );
 		Msg & numeric( int errOrRpl );
@@ -25,7 +25,10 @@ class Msg
 		/*조립한 내용들을 메시지로 이어붙이기.*/
 		std::string serialize( void );
 
-		/*미리 지정하는 함수들.*/
+		/*미리 지정한 함수들.
+		 * 사용하기 편하기 위해 작성된 함수들.
+		 * 내부적으로 setPrefix, numeric, addParam 등을 호출.
+		 */
 		//ERR_UNKNOWNCOMMAND (421)
 		//:servername 421 <nick> <command> :Unknown command
 		Msg & errUnknownCmd(const std::string &nick, const std::string &cmd);
@@ -102,6 +105,10 @@ class Msg
 		Msg & errChanOpPrivsNeeded(const std::string &nick,
 				const std::string &channel);
 
+		// =========================================================================================
+		// RPL
+		// =========================================================================================
+
 		// RPL_WELCOME (001)
 		// :servername 001 <nick> :Welcome to the Internet Relay Network <nick>!<user>@<host>
 		Msg & rplWelcome(const std::string &nick,
@@ -154,7 +161,9 @@ class Msg
 		// :servername 366 <nick> <channel> :End of NAMES list
 		Msg & rplEndOfNames(const std::string &nick,
 				const std::string &channel);
-
-
+		// 324
+		Msg & rplChannelModeIs(const std::string &nick,
+				const std::string &channelName,
+				const std::string &modes);
 };
 #endif

@@ -1,5 +1,6 @@
 #ifndef CLIENTMANAGER_HPP
 # define CLIENTMANAGER_HPP
+# include "IServerController.hpp"
 # include "Client.hpp"
 # include <map>
 
@@ -10,7 +11,7 @@ class IRCServer;
 class ClientManager
 {
 	private:
-		//std::vector<Client *> m_clients;
+		IServerController &m_server;
 		std::map<int, Client *> m_fdBased;
 		std::map<std::string , Client *> m_nameBased;
 	public:
@@ -27,7 +28,7 @@ class ClientManager
 
 //		bool sendMsg( int fd, const std::string &msg );
 //		bool sendMsg( Client &client, const std::string &msg );
-		ClientManager( void );
+		ClientManager( IServerController &ircServer );
 		~ClientManager( void );
 		void clientManagerAnnounce( void );
 };

@@ -1,3 +1,4 @@
+#include "IServerController.hpp"
 #include "Msg.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
@@ -361,7 +362,8 @@ std::string Channel::modeToString( void )
 // constructor/destructor.
 // ======================================================================
 
-Channel::Channel( void ) :
+Channel::Channel( IServerController &ircServer ) :
+	m_server(ircServer),
 	m_passwd(""),
 	m_inviteOnly(false),
 	m_topicOpOnly(false),

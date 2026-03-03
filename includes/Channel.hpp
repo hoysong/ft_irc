@@ -1,5 +1,6 @@
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
+# include "IServerController.hpp"
 # include "Client.hpp"
 # include <map>
 # include <set>
@@ -11,6 +12,7 @@ class IRCServer;
 class Channel
 {
 	private:
+		IServerController &m_server;
 		std::string m_channelName;
 		typedef std::map<std::string, Client *> memberMap;
 		memberMap m_members;
@@ -23,7 +25,7 @@ class Channel
 		bool m_topicOpOnly; // mode t
 		int m_maxMembers; // mode l(limit).
 	public:
-		Channel( void );
+		Channel( IServerController &ircServer );
 		~Channel( void );
 
 		bool addMember( Client &client, const std::string &passwd);
