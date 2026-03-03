@@ -3,41 +3,19 @@
 #include "Msg.hpp"
 #include <vector>
 
-//| 441 | `ERR_USERNOTINCHANNEL` | `<nick> <channel> :They aren't on that channel` |
-//| 461 | `ERR_NEEDMOREPARAMS` | `MODE :Not enough parameters` |
-//| 467 | `ERR_KEYSET` | `<channel> :Channel key already set` |
-//| 472 | `ERR_UNKNOWNMODE` | `<char> :is unknown mode char to me for <channel>` |
-//| 477 | `ERR_NOCHANMODES` | `<channel> :Channel doesn't support modes` |
-//| 482 | `ERR_CHANOPRIVSNEEDED` | `<channel> :You're not channel operator` |
-
-//#### 정상 응답 (조회 시)
-//| 324 | `RPL_CHANNELMODEIS` | `<channel> <mode> <mode params>` |
-//| 329 | `RPL_CREATIONTIME` | `<channel> <creation timestamp>` |
-//| 367 | `RPL_BANLIST` | `<channel> <banmask>` |
-//| 368 | `RPL_ENDOFBANLIST` | `<channel> :End of channel ban list` |
-//
-//클라이언트 요청:
-//MODE hoysong +i
-//서버의 성공 응답 (에코):
-//:hoysong!user@host MODE hoysong :+i
 void IRCServer::setChannelMode(Client &client,
 		const std::string &target,
 		const std::string &modes,
 		std::vector<std::string> &modeTargets)
 {
-//	C → S (요청): MODE #ft_irc
-//	S → C (응답): :irc.local 324 hoysong #ft_irc +kl secret_key 50
 	Channel *channel;
 	if (!m_channelManager.getChannel(target, channel))
 	{
-//		sendMsg(client.getFd(), errMsg( ERR_NOSUCHCHANNEL, client,
-//					target, "No such channel"));
 		Msg().errNoSuchChannel(client.getNickName(), target).sendTo(client.getFd());
 		return ;
 	}
 	if (modes.empty())
 	{ // 모드 조회
-//		sendMsg(client.getFd(), rplChannelMode(client, *channel));
 		Msg()
 			.setPrefix(SERVER_PREFIX)
 			.numeric(RPL_CHANNELMODEIS)
@@ -52,8 +30,6 @@ void IRCServer::setChannelMode(Client &client,
 	{ // 모드 적용
 		if(!channel->findMember(client))
 		{ // 멤버가 아님.
-//			sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client,
-//						target, "You're not on that channel"));
 			Msg()
 				.setPrefix(SERVER_PREFIX)
 				.numeric(ERR_NOTONCHANNEL)
@@ -65,8 +41,6 @@ void IRCServer::setChannelMode(Client &client,
 		}
 		else if (!channel->isChannelOper(client))
 		{ // 오퍼가 아님.
-//			sendMsg(client.getFd(), errMsg(ERR_CHANOPRIVSNEEDED, client,
-//						target, "You're not channel operator"));
 			Msg().errChanOpPrivsNeeded(client.getNickName(), target).sendTo(client.getFd());
 			return ;
 		}
@@ -221,9 +195,6 @@ void IRCServer::setCliientMode(Client &client,
 	{ // 모드 조회 요청.
 		if (target != client.getNickName())
 		{
-//			sendMsg(client.getFd(), errMsg(ERR_USERSDONTMATCH, client,
-//						target,
-//						"Cannot change mode for other user"));
 			Msg()
 				.setPrefix(SERVER_PREFIX)
 				.addParam(client.getNickName())
@@ -232,7 +203,6 @@ void IRCServer::setCliientMode(Client &client,
 				.sendTo(client.getFd());
 		}
 		else
-//			sendMsg(client.getFd(), rplUserMode(client));
 			{
 				std::string trailing = ":+";
 				if (client.isInvisible())
@@ -295,7 +265,6 @@ void IRCServer::setCliientMode(Client &client,
 	}
 	if (!trailingBuffer.empty())
 	{ // 변경 완료 메시지.
-//		sendMsg(client.getFd(), goodMsg(client, "MODE", client.getNickName(), trailingBuffer));
 		Msg()
 			.setPrefix(client.getMsgPrefix())
 			.addParam("MODE")
@@ -344,7 +313,6 @@ void    IRCServer::handleMode(Client& client, const paramVector& params)
 	}
 	if (target.empty())
 	{ // 타겟 비었으면 파라미터가 없음.
-//		sendMsg(client.getFd(), notEnoughParam(client, "MODE"));
 		Msg().errNotEnoughParam(client.getNickName(), "MODE").sendTo(client.getFd());
 		return ;
 	}
