@@ -13,7 +13,6 @@ void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &k
 	while (servIter != servers.end())
 	{
 		if ((*servIter)[0] != '#' || servIter->size() == 1)
-//			sendMsg(client.getFd(), errMsg(ERR_BADCHANMASK, client, *servIter, "Invalid cahnnel name"));
 			Msg()
 				.setPrefix(SERVER_PREFIX)
 				.addParam(client.getNickName())

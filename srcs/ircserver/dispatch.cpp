@@ -32,13 +32,11 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_ALREADYREGISTRED, client, "already registered"));
 		Msg().errAlreadyRegist(client.getNickName()).sendTo(client.getFd());
 		return ;
 	}
 	else if (!params.size())
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "PASS"));
 		Msg().errNotEnoughParam(client.getNickName(), "PASS").sendTo(client.getFd());
 		return ;
 	}
@@ -46,7 +44,6 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 		return;
 	else if (params[0] != m_passwd)
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_PASSWDMISMATCH, client, "Password incorrect"));
 		Msg().errPasswdMismatch(client.getNickName()).sendTo(client.getFd());
 		softDisconnect(client, "");
 		return ;
@@ -98,13 +95,11 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 {
 	if (!params.size())
 	{ // 파라미터 부족.
-//		sendMsg(client.getFd(), errMsg(ERR_NONICKNAMEGIVEN, client, "No nickname given"));
 		Msg().errNoNickGiven(client.getNickName()).sendTo(client.getFd());
 		return ;
 	}
 	if ( !isValidNick(params[0]) )
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_ERRONEUSNICKNAME, client, params[0], "Erroneous nickname"));
 		Msg().errOneousNick(client.getNickName(), params[0]).sendTo(client.getFd());
 		return ;
 	}
@@ -113,13 +108,11 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	std::string oldNickBuffer = client.getNickName();
 	if ( !m_clientManager.setClientNickName(client, params[0]) )
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NICKNAMEINUSE, client, params[0], "Nickname is already in use"));
 		Msg().errNickInUse(client.getNickName(), params[0]).sendTo(client.getFd());
 		return ;
 	}
 	/* 변경 성공! */
 	// client가 속한 채널에 대해 브로드캐스트 로직.
-	//nickChangeBroadcastToChannels(client, oldNickBuffer);
 	if (client.getUserName().size()
 		&& client.isAuthed()
 		&& client.getNickName() != "*"
@@ -177,13 +170,11 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_ALREADYREGISTRED, client, "already registered"));
 		Msg().errAlreadyRegist(client.getNickName()).sendTo(client.getFd());
 		return ;
 	}
 	else if (params.size() < 4)
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "USER"));
 		Msg().errNotEnoughParam(client.getNickName(), "USER").sendTo(client.getFd());
 		return ;
 	}
@@ -212,7 +203,6 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 void    IRCServer::handleQuit(Client& client, const paramVector& params)
 {
 	softDisconnect(client,
-		//	goodMsg(client, "QUIT", "Disconnected from client")
 			Msg()
 			.setPrefix(client.getMsgPrefix())
 			.addParam("QUIT")
@@ -240,7 +230,6 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 	for(std::set<std::string>::iterator iter = targets.begin(); iter != targets.end(); iter++)
 	{
 		current = *iter;
-		//goodMsg(client, current, "PRIVMSG", msg);
 		std::string line = Msg()
 			.setPrefix(client.getMsgPrefix())
 			.addParam(current)
@@ -254,7 +243,6 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 				channel->broadcastPrivmsg(client, line);
 			else
 			{
-//				sendMsg(client.getFd(), errMsg( ERR_NOSUCHCHANNEL, client,
 //							current, "No such channel"));
 				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client.getFd());
 			}
@@ -271,7 +259,6 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 {
 	if (params.empty())
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NORECIPIENT, client, "No recipient given (PRIVMSG)"));
 		Msg()
 			.setPrefix(SERVER_PREFIX)
 			.numeric(ERR_NORECIPIENT)
@@ -282,7 +269,6 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 	}
 	else if (params.size() == 1)
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NOTEXTTOSEND, client, "No text to send"));
 		Msg()
 			.setPrefix(SERVER_PREFIX)
 			.numeric(ERR_NOTEXTTOSEND)
@@ -295,7 +281,6 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 	{
 		if (params[1].empty())
 		{
-//			sendMsg(client.getFd(), errMsg(ERR_NOTEXTTOSEND, client, "No text to send"));
 			Msg()
 				.setPrefix(SERVER_PREFIX)
 				.numeric(ERR_NOTEXTTOSEND)
@@ -317,7 +302,6 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 	}
 	if (targets.size() > 4)
 	{
-//			sendMsg(client.getFd(), errMsg(ERR_TOOMANYTARGETS, client, params[0], "Too many targets (max: 4)"));
 			Msg()
 				.setPrefix(SERVER_PREFIX)
 				.numeric(ERR_TOOMANYTARGETS)
@@ -373,7 +357,6 @@ void    IRCServer::handlePart(Client& client, const paramVector& params)
 {
 	if (params.empty())
 	{ // 파라미터 부족
-//		sendMsg(client.getFd(), notEnoughParam(client, "PART"));
 		Msg().errNotEnoughParam(client.getNickName(), "PART").sendTo(client.getFd());
 		return ;
 	}
@@ -381,7 +364,6 @@ void    IRCServer::handlePart(Client& client, const paramVector& params)
 	splitMultiTarget(params[0], targets);
 	if (targets.empty() && params.size() == 1)
 	{ // 파라미터 부족
-//		sendMsg(client.getFd(), notEnoughParam(client, "PART"));
 		Msg().errNotEnoughParam(client.getNickName(), "PART").sendTo(client.getFd());
 		return ;
 	}
@@ -395,19 +377,16 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 {
 	if (params.empty())
 	{ // 파라미터 부족
-//		sendMsg(client.getFd(), notEnoughParam(client, "TOPIC"));
 		Msg().errNotEnoughParam(client.getNickName(), "TOPIC").sendTo(client.getFd());
 		return ;
 	}
 	if(!m_channelManager.findChannel(params[0]))
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NOSUCHCHANNEL, client, params[0], "No such Channel"));
 		Msg().errNoSuchChannel(client.getNickName(), params[0]).sendTo(client.getFd());
 		return ;
 	}
 	if (!client.isInChannel(params[0]))
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client, params[0], "You're not on channel"));
 		Msg().errNotOnChannel(client.getNickName(), params[0]).sendTo(client.getFd());
 		return ;
 	}
@@ -448,19 +427,16 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
 	{ // 파라미터 부족
-//		sendMsg(client.getFd(), notEnoughParam(client, "INVITE"));
 		Msg().errNotEnoughParam(client.getNickName(), "INVITE").sendTo(client.getFd());
 		return ;
 	}
 	if (!m_clientManager.isNickExists(params[0]))
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NOSUCHNICK, client, params[0], "No such nickanme"));
 		Msg().errNoSuchNick(client.getNickName(), params[0]).sendTo(client.getFd());
 		return ;
 	}
 	if (!client.isInChannel(params[1]))
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client, params[1], "You're not on that channel"));
 		Msg().errNotOnChannel(client.getNickName(), params[1]).sendTo(client.getFd());
 		return ;
 	}
@@ -468,19 +444,16 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 	m_channelManager.getChannel(params[1], channel);
 	if(channel->findMember(params[1]))
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_USERONCHANNEL, client, params[0], params[1], "is already on channel"));
 		Msg().errUserOnChannel(client.getNickName(), params[0], params[1]).sendTo(client.getFd());
 		return ;
 	}
 	if (!channel->isChannelOper(client.getNickName()))
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_CHANOPRIVSNEEDED, client, params[1], "you're not channel operator"));
 		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client.getFd());
 		return ;
 	}
 	/*여기까지 예외처리 끝.*/
 	Client &invitedClient = m_clientManager.getClient(params[0]);
-	//sendMsg(client.getFd(), noTrailingMsg(RPL_INVITING, client, params[0], params[1]));
 	Msg()
 		.setPrefix(SERVER_PREFIX)
 		.numeric(RPL_INVITING)
@@ -489,7 +462,6 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 		.addParam(params[0])
 		.trailing(false)
 		.sendTo(client.getFd());
-//	sendMsg(invitedClient.getFd(), goodMsg(client, "INVITE", params[0], params[1]));
 	Msg()
 		.setPrefix(client.getMsgPrefix())
 		.addParam("INVITE")
@@ -516,7 +488,6 @@ void IRCServer::kickProcess(Client &client, std::vector<std::string> &channels, 
 	if (channels.size() == 1)
 		while (targetlIter != targetlIterEnd)
 		{
-//			msg = goodMsg(client, "KICK", *channelIter, *targetlIter, trailing);
 			msg = Msg()
 				.setPrefix(client.getMsgPrefix())
 				.addParam("KICK")
@@ -530,7 +501,6 @@ void IRCServer::kickProcess(Client &client, std::vector<std::string> &channels, 
 	else
 		while (channelIter != channelIterEnd)
 		{
-//			msg = goodMsg(client, "KICK", *channelIter, *targetlIter, trailing);
 			msg = Msg()
 				.setPrefix(client.getMsgPrefix())
 				.addParam("KICK")
@@ -547,7 +517,6 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
 		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
 	}
 	
@@ -556,7 +525,6 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 	splitMultiTarget(params[0], channels);
 	if (channels.empty())
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
 		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
 		return ;
 	}
@@ -566,14 +534,12 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 	splitMultiTarget(params[1], clients);
 	if (clients.empty())
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
 		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
 		return ;
 	}
 
 	if (channels.size() != 1 && (channels.size() != clients.size()))
 	{ // 1대1 매칭인 경우 파라미터 에러 반환
-//		sendMsg(client.getFd(), notEnoughParam(client, "KICK"));
 		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
 		return ;
 	}

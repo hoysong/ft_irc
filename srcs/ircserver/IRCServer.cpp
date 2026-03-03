@@ -120,7 +120,6 @@ void IRCServer::eventHandler( struct epoll_event &event )
 		Client *ptr = static_cast<Client *>(event.data.ptr);
 		if (ptr)
 			hardDisconnect(*ptr,
-				//	goodMsg(*ptr, "QUIT", "Disconnected by unknown reason")
 					Msg()
 					.setPrefix(ptr->getMsgPrefix())
 					.addParam("QUIT")
