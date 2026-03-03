@@ -1,64 +1,64 @@
-#ifndef MSGHDLER_HPP
-# define MSGHDLER_HPP
-# include "ircError.hpp"
-# include <string>
-
-class Client;
-class Channel;
-
-bool sendMsg( int fd, const std::string &buf );
-
-std::string errMsg( e_ircError errCode,
-		Client &client,
-		std::string param );
-
-std::string errMsg( e_ircError errCode,
-		Client &client,
-		std::string param1,
-		std::string param2);
-
-std::string errMsg( e_ircError errCode,
-		Client &client,
-		std::string param1,
-		std::string param2,
-		std::string param3);
-
-std::string rplUserMode(Client &client);
-std::string rplChannelMode(Client &client, Channel &channel);
-
-std::string chanModeDone(e_rpl_numeric errCode,
-		Client &client,
-		const std::string &param1,
-		const std::string &param2);
-
-std::string goodMsg( e_rpl_numeric errCode,
-		Client &client,
-		const std::string &param1,
-		const std::string &param2);
-std::string goodMsg(e_rpl_numeric errCode,
-		Client &client,
-		const std::string &param1,
-		const std::string &param2,
-		const std::string &param3);
-std::string goodMsg( Client &client,
-		const std::string &param1,
-		const std::string &param2);
-std::string goodMsg( Client &client,
-		const std::string &param1,
-		const std::string &param2,
-		const std::string &param3);
-std::string goodMsg( Client &client,
-		const std::string &param1,
-		const std::string &param2,
-		const std::string &param3,
-		const std::string &param4);
-
-std::string noTrailingMsg(e_rpl_numeric errCode,
-		Client &client,
-		const std::string &param1,
-		const std::string &param2);
-
-
-std::string notEnoughParam(Client &client, const std::string &command);
-
-#endif
+//#ifndef MSGHDLER_HPP
+//# define MSGHDLER_HPP
+//# include "ircError.hpp"
+//# include <string>
+//
+//class Client;
+//class Channel;
+//
+//bool sendMsg( int fd, const std::string &buf );
+//
+//std::string errMsg( e_ircError errCode,
+//		Client &client,
+//		std::string param );
+//
+//std::string errMsg( e_ircError errCode,
+//		Client &client,
+//		std::string param1,
+//		std::string param2);
+//
+//std::string errMsg( e_ircError errCode,
+//		Client &client,
+//		std::string param1,
+//		std::string param2,
+//		std::string param3);
+//
+//std::string rplUserMode(Client &client);
+//std::string rplChannelMode(Client &client, Channel &channel);
+//
+//std::string chanModeDone(e_rpl_numeric errCode,
+//		Client &client,
+//		const std::string &param1,
+//		const std::string &param2);
+//
+//std::string goodMsg( e_rpl_numeric errCode,
+//		Client &client,
+//		const std::string &param1,
+//		const std::string &param2);
+//std::string goodMsg(e_rpl_numeric errCode,
+//		Client &client,
+//		const std::string &param1,
+//		const std::string &param2,
+//		const std::string &param3);
+//std::string goodMsg( Client &client,
+//		const std::string &param1,
+//		const std::string &param2);
+//std::string goodMsg( Client &client,
+//		const std::string &param1,
+//		const std::string &param2,
+//		const std::string &param3);
+//std::string goodMsg( Client &client,
+//		const std::string &param1,
+//		const std::string &param2,
+//		const std::string &param3,
+//		const std::string &param4);
+//
+//std::string noTrailingMsg(e_rpl_numeric errCode,
+//		Client &client,
+//		const std::string &param1,
+//		const std::string &param2);
+//
+//
+//std::string notEnoughParam(Client &client, const std::string &command);
+//
+//#endif

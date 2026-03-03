@@ -1,6 +1,7 @@
 #include "ClientManager.hpp"
 #include "Channel.hpp"
-#include "MyLibft.hpp"
+#include "Msg.hpp"
+//#include "MyLibft.hpp"
 #include "msgHdler.hpp"
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
@@ -98,7 +99,8 @@ bool ClientManager::sendPrivmsg(Client &client, const std::string &name, const s
 	std::map<std::string, Client *>::iterator iter = m_nameBased.find(name);
 	if (iter == m_nameBased.end())
 	{
-		sendMsg(client.getFd(), errMsg(ERR_NOSUCHNICK, client, name, "No such nickname"));
+//		sendMsg(client.getFd(), errMsg(ERR_NOSUCHNICK, client, name, "No such nickname"));
+		Msg().errNoSuchNick(client.getNickName(), name).sendTo(client.getFd());
 		return (false);
 	}
 	sendMsg(iter->second->getFd(), msg);

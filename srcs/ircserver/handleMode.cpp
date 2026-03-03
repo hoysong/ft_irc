@@ -1,6 +1,7 @@
 #include "IRCServer.hpp"
 #include "ircError.hpp"
 #include "msgHdler.hpp"
+#include "Msg.hpp"
 #include <vector>
 
 //| 441 | `ERR_USERNOTINCHANNEL` | `<nick> <channel> :They aren't on that channel` |
@@ -30,27 +31,44 @@ void IRCServer::setChannelMode(Client &client,
 	Channel *channel;
 	if (!m_channelManager.getChannel(target, channel))
 	{
-		sendMsg(client.getFd(), errMsg( ERR_NOSUCHCHANNEL, client,
-					target, "No such channel"));
+//		sendMsg(client.getFd(), errMsg( ERR_NOSUCHCHANNEL, client,
+//					target, "No such channel"));
+		Msg().errNoSuchChannel(client.getNickName(), target).sendTo(client.getFd());
 		return ;
 	}
 	if (modes.empty())
 	{ // 모드 조회
-		sendMsg(client.getFd(), rplChannelMode(client, *channel));
+//		sendMsg(client.getFd(), rplChannelMode(client, *channel));
+		Msg()
+			.setPrefix(SERVER_PREFIX)
+			.numeric(RPL_CHANNELMODEIS)
+			.addParam(client.getNickName())
+			.addParam(channel->getChannelName())
+			.addParam(channel->modeToString())
+			.trailing(false)
+			.sendTo(client.getFd());
 		return ;
 	}
 	else
 	{ // 모드 적용
 		if(!channel->findMember(client))
 		{ // 멤버가 아님.
-			sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client,
-						target, "You're not on that channel"));
+//			sendMsg(client.getFd(), errMsg(ERR_NOTONCHANNEL, client,
+//						target, "You're not on that channel"));
+			Msg()
+				.setPrefix(SERVER_PREFIX)
+				.numeric(ERR_NOTONCHANNEL)
+				.addParam(client.getNickName())
+				.addParam(target)
+				.addParam("You're not on that channel")
+				.sendTo(client.getFd());
 			return ;
 		}
 		else if (!channel->isChannelOper(client))
 		{ // 오퍼가 아님.
-			sendMsg(client.getFd(), errMsg(ERR_CHANOPRIVSNEEDED, client,
-						target, "You're not channel operator"));
+//			sendMsg(client.getFd(), errMsg(ERR_CHANOPRIVSNEEDED, client,
+//						target, "You're not channel operator"));
+			Msg().errChanOpPrivsNeeded(client.getNickName(), target).sendTo(client.getFd());
 			return ;
 		}
 		bool add = false;
@@ -182,7 +200,14 @@ void IRCServer::setChannelMode(Client &client,
 		{ // 변경 완료 메시지.
 			for(std::vector<std::string>::iterator iter = params.begin(); iter != params.end(); iter++)
 				trailingBuffer += " " + *iter;
-			channel->broadcastMsg(chanModeDone(RPL_CHANNELMODEIS, client, target, trailingBuffer));
+			channel->broadcastMsg(
+					Msg()
+					.setPrefix(client.getMsgPrefix())
+					.addParam(client.getNickName())
+					.addParam(target)
+					.addParam(trailingBuffer)
+					.serialize()
+				);
 		}
 	}
 }
@@ -196,12 +221,31 @@ void IRCServer::setCliientMode(Client &client,
 	{ // 모드 조회 요청.
 		if (target != client.getNickName())
 		{
-			sendMsg(client.getFd(), errMsg(ERR_USERSDONTMATCH, client,
-						target,
-						"Cannot change mode for other user"));
+//			sendMsg(client.getFd(), errMsg(ERR_USERSDONTMATCH, client,
+//						target,
+//						"Cannot change mode for other user"));
+			Msg()
+				.setPrefix(SERVER_PREFIX)
+				.addParam(client.getNickName())
+				.addParam(target)
+				.addParam("Cannot change mode for other user")
+				.sendTo(client.getFd());
 		}
 		else
-			sendMsg(client.getFd(), rplUserMode(client));
+//			sendMsg(client.getFd(), rplUserMode(client));
+			{
+				std::string trailing = ":+";
+				if (client.isInvisible())
+					trailing += 'i';
+				if (client.isWallopos())
+					trailing += 'w';
+				Msg()
+					.setPrefix(SERVER_PREFIX)
+					.numeric(RPL_UMODEIS)
+					.addParam(client.getNickName())
+					.addParam(trailing)
+					.sendTo(client.getFd());
+			}
 		return ;
 	}
 
@@ -251,7 +295,14 @@ void IRCServer::setCliientMode(Client &client,
 	}
 	if (!trailingBuffer.empty())
 	{ // 변경 완료 메시지.
-		sendMsg(client.getFd(), goodMsg(client, "MODE", client.getNickName(), trailingBuffer));
+//		sendMsg(client.getFd(), goodMsg(client, "MODE", client.getNickName(), trailingBuffer));
+		Msg()
+			.setPrefix(client.getMsgPrefix())
+			.addParam("MODE")
+			.addParam(client.getNickName())
+			.addParam(trailingBuffer)
+			.trailing(false)
+			.sendTo(client.getFd());
 	}
 }
 void IRCServer::modeProcess(Client &client,
@@ -293,7 +344,8 @@ void    IRCServer::handleMode(Client& client, const paramVector& params)
 	}
 	if (target.empty())
 	{ // 타겟 비었으면 파라미터가 없음.
-		sendMsg(client.getFd(), notEnoughParam(client, "MODE"));
+//		sendMsg(client.getFd(), notEnoughParam(client, "MODE"));
+		Msg().errNotEnoughParam(client.getNickName(), "MODE").sendTo(client.getFd());
 		return ;
 	}
 	modeProcess(client, target, modes, modeTargets);

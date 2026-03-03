@@ -1,4 +1,5 @@
 #include "IRCServer.hpp"
+#include "Msg.hpp"
 
 typedef std::vector<std::string> strVect;
 
@@ -12,7 +13,13 @@ void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &k
 	while (servIter != servers.end())
 	{
 		if ((*servIter)[0] != '#' || servIter->size() == 1)
-			sendMsg(client.getFd(), errMsg(ERR_BADCHANMASK, client, *servIter, "Invalid cahnnel name"));
+//			sendMsg(client.getFd(), errMsg(ERR_BADCHANMASK, client, *servIter, "Invalid cahnnel name"));
+			Msg()
+				.setPrefix(SERVER_PREFIX)
+				.addParam(client.getNickName())
+				.addParam(*servIter)
+				.addParam("Invalid channel name")
+				.sendTo(client.getFd());
 		else if (keyIter == keys.end())
 			m_channelManager.addClientToChannel(client, *servIter, "");
 		else
@@ -27,14 +34,22 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 {
 	if (params.size() < 1)
 	{
-		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
+//		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
+		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client.getFd());
 		return ;
 	}
 	paramVector servers;
 	paramVector keys;
 	if (params[0] == "0")
 	{ // 모든 채널에서 나가는 로직 넣어줘야 함.
-		softDisconnect(client, goodMsg(client, "PART", "Parted by client"));
+//		softDisconnect(client, goodMsg(client, "PART", "Parted by client"));
+		softDisconnect(client,
+				Msg()
+				.setPrefix(client.getMsgPrefix())
+				.addParam("PART")
+				.addParam("Parted by client")
+				.serialize()
+				);
 		return ;
 	}
 	else
@@ -43,7 +58,8 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		splitMultiTarget(params[1], keys); // 콤마 기준 split
 	if (servers.empty() && keys.empty())
 	{
-		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
+//		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
+		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client.getFd());
 		return ;
 	}
 	/* 키가 채널보다 많으면 빈 값으로 취급할거임. */

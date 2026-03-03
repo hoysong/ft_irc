@@ -1,6 +1,7 @@
 #ifndef IRCSERVER_HPP
 # define IRCSERVER_HPP
-# include "msgHdler.hpp"
+//# include "msgHdler.hpp"
+#include "Msg.hpp"
 # include "ListenSocket.hpp"
 # include "EpollManager.hpp"
 # include "ClientManager.hpp"
@@ -107,7 +108,5 @@ class IRCServer
 		IRCServer(std::string ip, int port, std::string passwd);
 		void serverLoop( void );
 };
-
-bool sendMsg( int fd, const std::string &buf );
 
 #endif

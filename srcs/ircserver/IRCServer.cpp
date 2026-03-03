@@ -91,7 +91,13 @@ void IRCServer::recvClient( Client &refClient )
 	if (!refClient.recvFd())
 	{ // client recv() 실패.
 		std::cerr << "\tclient recv() fail." << std::endl;
-		hardDisconnect(refClient, goodMsg(refClient, "QUIT", "Disconnected by server"));
+		hardDisconnect(refClient,
+					Msg()
+					.setPrefix(refClient.getMsgPrefix())
+					.addParam("QUIT")
+					.addParam("Disconnected by unknown reawon")
+					.serialize()
+					);
 		return ;
 	}
 
@@ -113,7 +119,14 @@ void IRCServer::eventHandler( struct epoll_event &event )
 	{ // 종료 처리
 		Client *ptr = static_cast<Client *>(event.data.ptr);
 		if (ptr)
-			hardDisconnect(*ptr, goodMsg(*ptr, "QUIT", "Disconnected by unknown reason"));
+			hardDisconnect(*ptr,
+				//	goodMsg(*ptr, "QUIT", "Disconnected by unknown reason")
+					Msg()
+					.setPrefix(ptr->getMsgPrefix())
+					.addParam("QUIT")
+					.addParam("Disconnected by unknown reawon")
+					.serialize()
+					);
 		return ;
 	}
 	

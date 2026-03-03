@@ -62,7 +62,12 @@ void Channel::newMemberBroadcast(Client &client)
 	std::map<std::string, Client *>::iterator iter_end = m_members.end();
 	while (iter != iter_end)
 	{
-		sendMsg(iter->second->getFd(), goodMsg(client, "JOIN", m_channelName));
+//		sendMsg(iter->second->getFd(), goodMsg(client, "JOIN", m_channelName));
+		Msg()
+			.setPrefix(client.getMsgPrefix())
+			.addParam("JOIN")
+			.addParam(m_channelName)
+			.sendTo(client.getFd());
 		iter++;
 	}
 }
@@ -96,7 +101,8 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 	}
 	if (passwd != m_passwd)
 	{
-		sendMsg(client.getFd(), errMsg(ERR_BADCHANNELKEY, client, m_channelName, "Cannot join channel (+k)"));
+		//sendMsg(client.getFd(), errMsg(ERR_BADCHANNELKEY, client, m_channelName, "Cannot join channel (+k)"));
+		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client.getFd());
 		return (false);
 	}
 	m_members[client.getNickName()] = &client;
@@ -124,7 +130,8 @@ bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
 	{
 		if (!findMember(client))
 		{
-			sendMsg(client.getFd(), errMsg(ERR_CANNOTSENDTOCHAN, client, m_channelName, "Cannot send to channel (+i)"));
+//			sendMsg(client.getFd(), errMsg(ERR_CANNOTSENDTOCHAN, client, m_channelName, "Cannot send to channel (+i)"));
+			Msg().errCantSendToChan(client.getNickName(), m_channelName).sendTo(client.getFd());
 			return (false);
 		}
 	}
