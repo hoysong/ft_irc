@@ -2,7 +2,6 @@
 #include "Msg.hpp"
 #include "ircError.hpp"
 #include "modeMask.hpp"
-#include "msgHdler.hpp"
 #include <cctype>
 #include <set>
 #include <sys/socket.h>

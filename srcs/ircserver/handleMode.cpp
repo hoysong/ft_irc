@@ -1,6 +1,5 @@
 #include "IRCServer.hpp"
 #include "ircError.hpp"
-#include "msgHdler.hpp"
 #include "Msg.hpp"
 #include <vector>
 

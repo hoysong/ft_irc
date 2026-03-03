@@ -88,7 +88,7 @@ std::string Client::getMsgPrefix( void )
 {
 	std::string host = getHost();
 	std::stringstream ss;
-	ss << ":" << m_nickName << "!" << m_userName << "@" << host;
+	ss << m_nickName << "!" << m_userName << "@" << host;
 	return (ss.str());
 }
 

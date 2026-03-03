@@ -1,5 +1,5 @@
+#include "Msg.hpp"
 #include "Channel.hpp"
-#include "IRCServer.hpp"
 #include "Client.hpp"
 #include <exception>
 #include <iostream>

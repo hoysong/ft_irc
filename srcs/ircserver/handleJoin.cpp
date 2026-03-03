@@ -34,7 +34,6 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 {
 	if (params.size() < 1)
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
 		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client.getFd());
 		return ;
 	}
@@ -42,7 +41,6 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 	paramVector keys;
 	if (params[0] == "0")
 	{ // 모든 채널에서 나가는 로직 넣어줘야 함.
-//		softDisconnect(client, goodMsg(client, "PART", "Parted by client"));
 		softDisconnect(client,
 				Msg()
 				.setPrefix(client.getMsgPrefix())
@@ -58,7 +56,6 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		splitMultiTarget(params[1], keys); // 콤마 기준 split
 	if (servers.empty() && keys.empty())
 	{
-//		sendMsg(client.getFd(), notEnoughParam(client, "JOIN"));
 		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client.getFd());
 		return ;
 	}
