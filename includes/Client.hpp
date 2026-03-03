@@ -1,5 +1,6 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
+# include "IServerController.hpp"
 # include <sys/socket.h> // recv(), ssize_t.
 # include <string>
 # include <map>
@@ -9,6 +10,7 @@ class Channel;
 class Client
 {
 	private:
+		IServerController &m_server;
 		const int m_fd;
 		std::string m_buffer;
 		void appendBuffer( char *buffer, ssize_t size );
@@ -24,7 +26,7 @@ class Client
 		std::string m_userName;
 		std::string m_realName;
 	public:
-		Client( int fd );
+		Client( int fd, IServerController &ircServer );
 		~Client( void );
 
 		bool recvFd( void );

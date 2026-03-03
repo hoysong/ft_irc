@@ -1,6 +1,7 @@
 #ifndef CHANNELMANAGER_HPP
 # define CHANNELMANAGER_HPP
 # include "Channel.hpp"
+#include "IServerController.hpp"
 # include <map>
 # include <string>
 
@@ -9,6 +10,7 @@ class IRCServer;
 class ChannelManager
 {
 	private:
+		IServerController &m_server;
 		typedef std::map<std::string, Channel> chanMap;
 		std::map<std::string, Channel> m_channels;
 //		bool addChannel( const std::string &channelName );
@@ -36,7 +38,7 @@ class ChannelManager
 		void eraseAllEmptyChannels( void );
 		bool findChannel( const std::string &channelName );
 
-		ChannelManager( void );
+		ChannelManager( IServerController &ircServer );
 		~ChannelManager( void );
 		void channelManagerAnnounce( void );
 

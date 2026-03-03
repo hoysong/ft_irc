@@ -3,6 +3,7 @@
 #include <map>
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
+#include "IServerController.hpp"
 #include "MyLibft.hpp"
 
 void Client::announce( void )
@@ -88,7 +89,7 @@ std::string Client::getMsgPrefix( void )
 {
 	std::string host = getHost();
 	std::stringstream ss;
-	ss << ":" << m_nickName << "!" << m_userName << "@" << host;
+	ss << m_nickName << "!" << m_userName << "@" << host;
 	return (ss.str());
 }
 
@@ -215,7 +216,8 @@ bool Client::popLine( std::string &line )
 /***************************/
 /* constcurtor/destructor. */
 /***************************/
-Client::Client( int fd ) :
+Client::Client( int fd , IServerController &ircServer ) :
+	m_server(ircServer),
 	m_fd(fd),
 	m_authed(false),
 	m_registered(false),

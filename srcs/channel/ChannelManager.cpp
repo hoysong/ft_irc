@@ -1,8 +1,10 @@
 #include "ChannelManager.hpp"
 #include "Channel.hpp"
+#include "IServerController.hpp"
 #include "ircError.hpp"
-#include "msgHdler.hpp"
+#include "Msg.hpp"
 #include <iostream>
+#include <utility>
 
 void ChannelManager::channelManagerAnnounce( void )
 {
@@ -37,8 +39,12 @@ bool ChannelManager::addClientToChannel(
 	/* 채널 못찾음.
 	 * 채널 생성, 클라이언트 추가.
 	 */
-	m_channels[channelName].setChannelName(channelName).assignPasswd(passwd).addMember(client, passwd);
-	m_channels[channelName].addChannelOper(client);
+	m_channels.insert(std::make_pair(channelName,Channel(m_server)));
+	m_channels.find(channelName)->second
+		.setChannelName(channelName)
+		.assignPasswd(passwd)
+		.addMember(client, passwd);
+	m_channels.find(channelName)->second.addChannelOper(client);
 	std::cout << "\tadd client to channel done." << std::endl;
 	return (true);
 }
@@ -52,22 +58,13 @@ bool ChannelManager::partClientFromChannel(
 	chanMap::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		sendMsg(client.getFd(),
-				errMsg(
-					ERR_NOSUCHCHANNEL,
-					client,
-					iter->first,
-					"No such channel"));
+		Msg().errNoSuchChannel(client.getNickName(), iter->first).sendTo(client.getFd());
 		return (false);
 	}
 
 	if (!(iter->second.removeMember(client, msg)))
 	{
-		sendMsg(client.getFd(),
-				errMsg(
-					ERR_NOTONCHANNEL,
-					client,
-					iter->first,"You're not on that channel"));
+		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client.getFd());
 		return (false);
 	}
 
@@ -85,34 +82,25 @@ bool ChannelManager::kickClientFromChannel(
 	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		sendMsg(client.getFd(), errMsg(
-					ERR_NOSUCHCHANNEL,
-					client,
-					channelName,
-					"No such Channel"));
+		Msg().errNoSuchChannel(client.getNickName(), channelName).sendTo(client.getFd());
 		return (false);
 	}
 
 	if (!iter->second.findMember(target))
 	{
-		sendMsg(client.getFd(),
-				errMsg(
-					ERR_USERNOTINCHANNEL,
-					client,
-					target,
-					channelName,
-					"They aren't on that channel"));
+		Msg()
+			.setPrefix(SERVER_PREFIX)
+			.addParam(client.getNickName())
+			.addParam(target)
+			.addParam(channelName)
+			.addParam("They aren't on that channel")
+			.sendTo(client.getFd());
 		return (false);
 	}
 
 	if (!iter->second.isChannelOper(client))
 	{
-		sendMsg(client.getFd(),
-				errMsg(
-					ERR_CHANOPRIVSNEEDED,
-					client,
-					channelName,
-					"You're not channel operator"));
+		Msg().errChanOpPrivsNeeded(client.getNickName(), channelName).sendTo(client.getFd());
 		return (false);
 	}
 
@@ -163,7 +151,7 @@ bool ChannelManager::findChannel( const std::string &channelName )
 	return (true);
 }
 
-ChannelManager::ChannelManager( void )
+ChannelManager::ChannelManager( IServerController &ircServer ) : m_server(ircServer)
 {
 	std::cout << "[ChannelManager::ChannelManager()]" << std::endl;
 }
