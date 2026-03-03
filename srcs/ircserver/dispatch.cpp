@@ -569,6 +569,16 @@ void    IRCServer::handleWhowas(Client& client, const paramVector& params)
 
 void    IRCServer::handlePing(Client& client, const paramVector& params)
 {
+	if (params.empty())
+	{
+		Msg().errNotEnoughParam(client.getNickName(), "PING").sendTo(client.getFd());
+		return ;
+	}
+	Msg().setPrefix(SERVER_PREFIX)
+		.addParam("PONG")
+		.addParam(SERVER_PREFIX)
+		.addParam(params[0])
+		.sendTo(client.getFd());
 }
 
 void    IRCServer::handlePong(Client& client, const paramVector& params)
