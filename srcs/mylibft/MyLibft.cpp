@@ -1,8 +1,6 @@
 #include "MyLibft.hpp"
-
 #include <climits>
 #include <cctype>
-#include <iostream>
 
 bool	MyLibft::aToInt(const std::string &s, int &out)
 {
@@ -45,34 +43,4 @@ bool	MyLibft::aToInt(const std::string &s, int &out)
 
 	out = n;
 	return true;
-}
-
-void MyLibft::myMemset(void *b, int c, size_t len)
-{
-	unsigned char *ptr = static_cast<unsigned char *>(b);
-	unsigned char val = static_cast<unsigned char>(c);
-	for (size_t i = 0; i < len; ++i)
-		ptr[i] = val;
-}
-void MyLibft::setLingerZero( int fd )
-{
-	struct linger ling = {1, 0};
-	setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
-}
-void MyLibft::showBuffer( std::string &str )
-{
-	std::string::iterator iter = str.begin();
-	std::string::iterator iter_end = str.end();
-
-	while ( iter != iter_end )
-	{
-		if (*iter == '\r')
-			std::cout << "\\r";
-		else if (*iter == '\n')
-			std::cout << "\\n\n";
-		else
-			std::cout << *iter;
-		iter++;
-	}
-	std::cout << std::endl;
 }

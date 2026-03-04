@@ -2,6 +2,7 @@
 #include "MyLibft.hpp"
 #include <arpa/inet.h>
 #include <iostream>
+#include <cstring>
 
 int ListenSocket::acceptClient( void )
 {
@@ -48,7 +49,7 @@ ListenSocket::ListenSocket(const std::string& ip, int port) : m_port(port), m_ip
 	}
 
 	// struct init.
-	MyLibft::myMemset(&m_addr, 0, sizeof(m_addr));
+	std::memset(&m_addr, 0, sizeof(m_addr));
 	m_addr.sin_family = AF_INET;
 	
 	// set ip.

@@ -20,10 +20,28 @@ void Client::announce( void )
 	std::cout << "m_modWallops  : " << m_modWallops << std::endl;
 }
 
+static void showBuffer( std::string &str )
+{
+	std::string::iterator iter = str.begin();
+	std::string::iterator iter_end = str.end();
+
+	while ( iter != iter_end )
+	{
+		if (*iter == '\r')
+			std::cout << "\\r";
+		else if (*iter == '\n')
+			std::cout << "\\n\n";
+		else
+			std::cout << *iter;
+		iter++;
+	}
+	std::cout << std::endl;
+}
+
 void Client::appendBuffer( char *buffer, ssize_t size )
 {
 	m_buffer.append(buffer, size);
-	MyLibft::showBuffer(m_buffer);
+	showBuffer(m_buffer);
 }
 
 bool Client::recvFd( void )

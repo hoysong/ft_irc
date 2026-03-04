@@ -142,6 +142,11 @@ void IRCServer::eventHandler( struct epoll_event &event )
 // =========================================================================
 // disconnect client.
 // =========================================================================
+static void setLingerZero( int fd )
+{
+	struct linger ling = {1, 0};
+	setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
+}
 
 void IRCServer::softDisconnect( Client &client, const std::string &msg )
 {
@@ -154,7 +159,7 @@ void IRCServer::softDisconnect( Client &client, const std::string &msg )
 void IRCServer::hardDisconnect( Client &client, const std::string &msg )
 {
 	std::cout << "[hardDisconnect]" << std::endl;
-	MyLibft::setLingerZero(client.getFd());
+	setLingerZero(client.getFd());
 	m_epoll.del(client.getFd());
 	m_clientManager.removeClient(client.getFd(), msg);
 	m_channelManager.eraseAllEmptyChannels();

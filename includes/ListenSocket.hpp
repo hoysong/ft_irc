@@ -10,9 +10,9 @@
 class ListenSocket
 {
 	private:
-		int					m_sockfd;
-		const int					m_port;
-		const std::string			m_ip;
+		int			m_sockfd;
+		const int		m_port;
+		const std::string	m_ip;
 		struct sockaddr_in	m_addr;
 
 		// 복사 방지
