@@ -4,7 +4,14 @@
 #include <unistd.h> // close().
 #include <iostream> // cout cerr.
 #include "IServerController.hpp"
-#include "MyLibft.hpp"
+
+void Client::broadcastJoinedChannels( const std::string &msg )
+{
+	for(std::map<std::string, Channel *>::iterator iter = m_channels.begin(); iter != m_channels.end(); iter++)
+	{
+		iter->second->broadcastMsg(msg);
+	}
+}
 
 void Client::announce( void )
 {
@@ -47,7 +54,7 @@ void Client::appendBuffer( char *buffer, ssize_t size )
 bool Client::recvFd( void )
 {
 	std::cout << "\t[Client::recvBuffer()]" << std::endl;
-	char buffer[5];
+	char buffer[100];
 	ssize_t bytes_read = recv(m_fd, buffer, sizeof(buffer) - 1, 0);
 
 	if (bytes_read <= 0)
@@ -125,13 +132,6 @@ std::map<std::string, Channel *> Client::getJoinedChannel( void )
 /* 자체적으로 닉네임 채널들에게 알리기.*/
 void Client::assignNickName( const std::string &name )
 {
-	std::map<std::string, Channel *>::iterator iter = m_channels.begin();
-	std::map<std::string, Channel *>::iterator iterEnd = m_channels.end();
-	while (iter != iterEnd)
-	{
-		iter->second->broadcastNickChanged(*this, name);
-		iter++;
-	}
 	m_nickName = name;
 }
 
@@ -213,7 +213,7 @@ void Client::quitAllChannels( void )
 	std::map<std::string, Channel *>::iterator iter_end = m_channels.end();
 	while (iter != iter_end)
 	{
-		iter->second->removeMember(*this, "");
+		iter->second->removeMember(*this);
 		iter++;
 	}
 	m_channels.clear();

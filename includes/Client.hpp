@@ -58,6 +58,7 @@ class Client
 		void addJoinedChannel( Channel &channel );
 		bool removeJoinedChannel( Channel &channel );
 		void quitAllChannels( void );
+		void broadcastJoinedChannels( const std::string &msg );
 		bool operator < (const Client &ref ) const;
 		void announce( void );
 };

@@ -72,7 +72,7 @@ bool ClientManager::setClientNickName( Client &client, const std::string &name )
 	if (nameIter != m_nameBased.end())
 		return (false); // 이미 존재하는 이름입니다.
 
-	/*m_nameBased에 이름 변경을 시도하는 클라이언트가 있는가?*/
+	/*m_nameBased에 이름 변경을 시도한 클라이언트가 있는가?*/
 	nameIter = m_nameBased.find(client.getNickName());
 	if (nameIter != m_nameBased.end())
 	{ // 이미 이름기반 map에 존재함.
@@ -152,7 +152,7 @@ Client *ClientManager::addNewClient( int fd )
 	return (newClient);
 };
 
-void ClientManager::removeClient( int fd, const std::string &msg )
+void ClientManager::removeClient( int fd )
 {
 	std::cout << "[ClientManager::removeClient()]" << std::endl;
 
@@ -160,16 +160,6 @@ void ClientManager::removeClient( int fd, const std::string &msg )
 	std::map<std::string, Client *>::iterator nameIter;
 
 	std::string nameBuff;
-
-	/* disconnect from Channel. */
-	Client &client = *(iter->second);
-	/*얘는 여기 담는게 맞음. 컨테이너 복사생성으로 돌려야 없애면서 나갈 수 있음.*/
-	std::map<std::string, Channel *> joined = client.getJoinedChannel();
-	for(std::map<std::string, Channel *>::iterator iter = joined.begin(); iter != joined.end(); iter++)
-	{
-		iter->second->removeMember(client, msg);
-	}
-	std::cout << "\t[Client exited from all joined channels.]" << std::endl;
 
 	/* delete from fdBased map. */
 	if (iter == m_fdBased.end())

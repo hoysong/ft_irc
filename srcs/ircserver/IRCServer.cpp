@@ -1,8 +1,8 @@
 #include "IRCServer.hpp"
+#include <exception>
 #include <iostream>
 #include <signal.h>
 #include "Msg.hpp"
-#include "MyLibft.hpp"
 
 // =========================================================================
 // signal handler.
@@ -82,7 +82,7 @@ void IRCServer::acceptLogics( void )
 	}
 
 	if (!m_epoll.add(clientFd, EPOLLIN | EPOLLRDHUP, newClient))
-		m_clientManager.removeClient(newClient->getFd(), "");
+		m_clientManager.removeClient(newClient->getFd());
 }
 
 /* 클라이언트 이벤트. */
@@ -92,13 +92,7 @@ void IRCServer::recvClient( Client &refClient )
 	if (!refClient.recvFd())
 	{ // client recv() 실패.
 		std::cerr << "\tclient recv() fail." << std::endl;
-		hardDisconnect(refClient,
-					Msg()
-					.setPrefix(refClient.getMsgPrefix())
-					.addParam("QUIT")
-					.addParam("Disconnected by unknown reawon")
-					.serialize()
-					);
+		hardDisconnect(refClient);
 		return ;
 	}
 
@@ -120,13 +114,7 @@ void IRCServer::eventHandler( struct epoll_event &event )
 	{ // 종료 처리
 		Client *ptr = static_cast<Client *>(event.data.ptr);
 		if (ptr)
-			hardDisconnect(*ptr,
-					Msg()
-					.setPrefix(ptr->getMsgPrefix())
-					.addParam("QUIT")
-					.addParam("Disconnected by unknown reawon")
-					.serialize()
-					);
+			hardDisconnect(*ptr);
 		return ;
 	}
 	
@@ -148,22 +136,49 @@ static void setLingerZero( int fd )
 	setsockopt(fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
 }
 
-void IRCServer::softDisconnect( Client &client, const std::string &msg )
+void IRCServer::syncDisconnect( Client &client )
+{
+	/* 등록된 epoll에서 삭제. */
+	m_epoll.del(client.getFd());
+
+	/* client가 속한 채널들에서 클라이언트 제거. */
+	std::map<std::string, Channel *> channels = client.getJoinedChannel();
+	for(std::map<std::string, Channel *>::iterator iter = channels.begin(); iter != channels.end(); iter ++)
+	{
+		iter->second->removeMember(client);
+		if (iter->second->isChannelEmpty())
+			m_channelManager.eraseEmptyChannel(iter->second->getChannelName());
+	}
+
+	/* 마지막으로 서버에서 삭제. */
+	m_clientManager.removeClient(client.getFd());
+//	m_channelManager.eraseAllEmptyChannels();
+}
+
+void IRCServer::softDisconnect( Client &client )
 {
 	std::cout << "[softDisconnect]" << std::endl;
-	m_epoll.del(client.getFd());
-	m_clientManager.removeClient(client.getFd(), msg);
-	m_channelManager.eraseAllEmptyChannels();
+	syncDisconnect(client);
 	std::cout << "\t[softDisconnect] END" << std::endl;
 }
-void IRCServer::hardDisconnect( Client &client, const std::string &msg )
+void IRCServer::hardDisconnect( Client &client )
 {
 	std::cout << "[hardDisconnect]" << std::endl;
 	setLingerZero(client.getFd());
-	m_epoll.del(client.getFd());
-	m_clientManager.removeClient(client.getFd(), msg);
-	m_channelManager.eraseAllEmptyChannels();
+	syncDisconnect(client);
 	std::cout << "\t[hardDisconnect] END" << std::endl;
+}
+
+void IRCServer::disconnectClients( void )
+{
+	for(std::set<Client *>::iterator iter = m_clientsToRemove.begin(); iter != m_clientsToRemove.end(); iter++)
+		hardDisconnect((*(*iter)));
+	m_clientsToRemove.clear();
+}
+
+void IRCServer::addClientToRemove( Client &client )
+{
+	m_clientsToRemove.insert(&client);
 }
 
 // =========================================================================
@@ -176,15 +191,20 @@ void IRCServer::serverLoop( void )
 
 	while (g_running)
 	{
-		std::cout << CYAN 
-			"[IRCServer::serverLoop()]: 새로운 루프입니다." << 
-			NC <<
-		std::endl;
+		std::cout << CYAN "[IRCServer::serverLoop()]: 새로운 루프입니다." << NC << std::endl;
 		eventCount = m_epoll.wait(events, MAX_EVENTS, -1);
 		for(int i = 0; i < eventCount; i++)
 		{
-			eventHandler(events[i]);
-			serverAnnounce();
+			try
+			{
+				eventHandler(events[i]);
+				disconnectClients();
+				serverAnnounce();
+			}
+			catch (std::exception &e)
+			{
+				std::cerr << e.what() << std::endl;
+			}
 		}
 	}
 }

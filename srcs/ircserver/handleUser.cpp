@@ -62,7 +62,7 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 		client.setUserName( "unknownUserName" );
 	else
 		client.setUserName(userName);
-	setUserMode(client, params[1]);
+	//setUserMode(client, params[1]);
 	client.setRealName(params[3]);
 
 	std::cout << "nickname: " << client.getNickName() << std::endl;

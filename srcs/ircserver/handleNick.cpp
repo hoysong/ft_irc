@@ -47,14 +47,20 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 	}
 	if ( client.getNickName() == params[0] )
 		return ; // 이미 동일하니 무시하기.
-	std::string oldNickBuffer = client.getNickName();
-	if ( !m_clientManager.setClientNickName(client, params[0]) )
-	{
+	if (m_clientManager.isNickExists(params[0])) // 이미 사용중인 닉임.
 		Msg().errNickInUse(client.getNickName(), params[0]).sendTo(client.getFd());
-		return ;
+
+	/***********************/
+	/* 닉변 싱크 맞춰주기. */
+	/***********************/
+	std::map<std::string, Channel *> channels = client.getJoinedChannel(); // 채널 순회하며 브로드캐스트.
+	std::string msg = Msg().setPrefix(client.getMsgPrefix()).addParam("NICK").addParam(params[0]).serialize();
+	for(std::map<std::string, Channel *>::iterator iter = channels.begin(); iter != channels.end(); iter ++)
+	{
+		iter->second->broadcastMsg(msg);
+		iter->second->syncNick(client, params[0]);
 	}
-	/* 변경 성공! */
-	// client가 속한 채널에 대해 브로드캐스트 로직.
+	m_clientManager.setClientNickName(client, params[0]);
 	if (client.getUserName().size()
 		&& client.isAuthed()
 		&& client.getNickName() != "*"

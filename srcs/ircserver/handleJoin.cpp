@@ -39,14 +39,16 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 	paramVector servers;
 	paramVector keys;
 	if (params[0] == "0")
-	{ // 모든 채널에서 나가는 로직 넣어줘야 함.
-		softDisconnect(client,
+	{
+
+		client.broadcastJoinedChannels(
 				Msg()
 				.setPrefix(client.getMsgPrefix())
 				.addParam("PART")
 				.addParam("Parted by client")
 				.serialize()
 				);
+		addClientToRemove(client);
 		return ;
 	}
 	else

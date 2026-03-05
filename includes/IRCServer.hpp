@@ -6,9 +6,11 @@
 # include "ClientManager.hpp"
 # include "ChannelManager.hpp"
 # include "IServerController.hpp"
+#include <exception>
 # include <string>
 # include <map>
 # include <vector>
+# include <set>
 
 # define MAX_EVENTS 10
 
@@ -29,6 +31,7 @@ class IRCServer : public IServerController
 		ListenSocket m_listenSocket;
 		ClientManager m_clientManager;
 		EpollManager m_epoll;
+		std::set<Client *> m_clientsToRemove;
 		
 		void eventHandler( struct epoll_event &event );
 		 void acceptLogics( void );
@@ -36,9 +39,11 @@ class IRCServer : public IServerController
 		  void processLine( Client &client, std::string &line);
 		   void dispatch( Client &client, t_message &message );
 
-		void softDisconnect( Client &client, const std::string &msg ); // 연결차단 전 메시지를 보낸 경우.
-		void hardDisconnect( Client &client, const std::string &msg ); // 즉시차단 하는 경우.
-
+		void syncDisconnect( Client &client );
+		void softDisconnect( Client &client ); // 연결차단 전 메시지를 보낸 경우.
+		void hardDisconnect( Client &client ); // 즉시차단 하는 경우.
+		void addClientToRemove( Client &client );
+		void disconnectClients( void );
 		void welcomeMsg( Client &client );
 
 		/*************/

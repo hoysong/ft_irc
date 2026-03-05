@@ -1,7 +1,6 @@
 #include "IRCServer.hpp"
 #include "Msg.hpp"
 #include "ircError.hpp"
-#include "modeMask.hpp"
 #include <cctype>
 #include <sys/socket.h>
 #include <vector>
@@ -45,7 +44,7 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 	else if (params[0] != m_passwd)
 	{
 		Msg().errPasswdMismatch(client.getNickName()).sendTo(client.getFd());
-		softDisconnect(client, "");
+		addClientToRemove(client);
 		return ;
 	}
 	client.setAuthed();
@@ -62,13 +61,14 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 
 void    IRCServer::handleQuit(Client& client, const paramVector& params)
 {
-	softDisconnect(client,
+	client.broadcastJoinedChannels(
 			Msg()
 			.setPrefix(client.getMsgPrefix())
 			.addParam("QUIT")
 			.addParam("Disconnected from server")
 			.serialize()
 			);
+	addClientToRemove(client);
 }
 
 void    IRCServer::handleOper(Client& client, const paramVector& params)

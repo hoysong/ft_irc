@@ -36,15 +36,17 @@ void Channel::announce( void )
 	}
 }
 
-void Channel::broadcastMsg( const std::string &msg )
+bool Channel::broadcastMsg( const std::string &msg )
 {
 	std::map<std::string, Client *>::iterator iter = m_members.begin();
 	std::map<std::string, Client *>::iterator iter_end = m_members.end();
 	while (iter != iter_end)
 	{
-		sendMsg(iter->second->getFd(), msg);
+		if (!sendMsg(iter->second->getFd(), msg))
+			m_server.addClientToRemove(*(iter->second));
 		iter++;
 	}
+	return (true);
 }
 
 void Channel::quitBroadcast( Client &client, const std::string &msg)
@@ -68,26 +70,16 @@ void Channel::newMemberBroadcast(Client &client)
 			.setPrefix(client.getMsgPrefix())
 			.addParam("JOIN")
 			.addParam(m_channelName)
-			.sendTo(client.getFd());
+			.sendTo(iter->second->getFd());
 		iter++;
 	}
 }
 
-void Channel::broadcastNickChanged( Client &client, const std::string &newNick)
+void Channel::syncNick( Client &client, const std::string &newNick)
 {
-	/* 여기까지 함수호출로 들어왔으면 정제된 데이터만 있을 것임.
-	 * 신뢰하고 로직 실행해도 됨.
-	 * 문제가 있다면 이전에 있는 것이므로 여기서 데이터 검증없이 돌러서 터뜨려야 함.
-	 */
-	std::map<std::string, Client *>::iterator iter = m_members.begin();
-	std::map<std::string, Client *>::iterator iter_end = m_members.end();
-	while (iter != iter_end)
-	{
-		sendMsg(iter->second->getFd(), client.getMsgPrefix() + " NICK :" + newNick + "\r\n");
-		iter++;
-	}
-	// 브로드캐스트 끝났으니 닉변 클라이언트 노드 교체.
-	iter = m_members.find(client.getNickName());
+	std::map<std::string, Client *>::iterator iter = m_members.find(client.getNickName());
+	if (iter == m_members.end())
+		return ; // 없으면 무시.
 	m_members.erase(iter);
 	m_members[newNick] = &client;
 }
@@ -111,16 +103,24 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 	std::cout << "success to add member to channel " << m_channelName << std::endl;
 	return (true);
 }
-bool Channel::removeMember( Client &client, const std::string &msg )
+bool Channel::removeMember( Client &client )
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter == m_members.end())
 		return (false); // 이미 없음.
-	quitBroadcast(client, msg);
+//	quitBroadcast(client, msg);
 	iter->second->removeJoinedChannel(*this); // 유저 객체에서 채널목록 삭제.
 	m_members.erase(iter); // 채널측 유저목록 삭제.
 	removeChannelOper(client); // 오퍼라면 삭제.
 	return (true);
+}
+
+bool Channel::removeMember( const std::string &target )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.find(target);
+	if (iter == m_members.end())
+		return (false);
+	return (removeMember(*(iter->second)));
 }
 
 bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
@@ -142,14 +142,6 @@ bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
 		iter++;
 	}
 	return (true);
-}
-
-bool Channel::removeMember( const std::string &target, const std::string &msg)
-{
-	std::map<std::string, Client *>::iterator iter = m_members.find(target);
-	if (iter == m_members.end())
-		return (false);
-	return (removeMember(*(iter->second), msg));
 }
 
 bool Channel::addChannelOper( Client &client)

@@ -1,5 +1,6 @@
 #ifndef MSG_HPP
 # define MSG_HPP
+# include "Client.hpp"
 # include <string>
 # include <vector>
 # define SERVER_PREFIX "ft_irc.local"
@@ -165,5 +166,20 @@ class Msg
 		Msg & rplChannelModeIs(const std::string &nick,
 				const std::string &channelName,
 				const std::string &modes);
+};
+
+class SendFailExcept : public std::exception
+{
+	private:
+		const std::string m_msg;
+	public :
+		SendFailExcept( void ) : m_msg("failed to send.") { };
+		SendFailExcept( Client &client ) : m_msg(client.getNickName()) { };
+		SendFailExcept( const std::string &whatMsg ) : m_msg(whatMsg) { };
+		~SendFailExcept( void ) throw() { };
+		const char * what() const throw()
+		{
+			return (m_msg.c_str());
+		};
 };
 #endif

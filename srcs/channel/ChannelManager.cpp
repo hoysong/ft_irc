@@ -48,6 +48,16 @@ bool ChannelManager::addClientToChannel(
 	return (true);
 }
 
+bool ChannelManager::broadcastToChannel( const std::string &channelName, const std::string &msg )
+{
+	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
+	if (iter == m_channels.end())
+		return (false);
+	if (!iter->second.broadcastMsg(msg))
+		return (false);
+	return (true);
+}
+
 bool ChannelManager::partClientFromChannel(
 		Client &client,
 		const std::string &channelName,
@@ -61,12 +71,11 @@ bool ChannelManager::partClientFromChannel(
 		return (false);
 	}
 
-	if (!(iter->second.removeMember(client, msg)))
+	if (!(iter->second.removeMember(client)))
 	{
 		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client.getFd());
 		return (false);
 	}
-
 	if (iter->second.isChannelEmpty())
 		m_channels.erase(iter);
 	return (true);
@@ -103,7 +112,8 @@ bool ChannelManager::kickClientFromChannel(
 		return (false);
 	}
 
-	iter->second.removeMember(target, msg);
+	iter->second.removeMember(target);
+	iter->second.broadcastMsg(msg);
 
 	return (true);
 }

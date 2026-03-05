@@ -1,6 +1,5 @@
 #include "IRCServer.hpp"
 #include "MyLibft.hpp"
-//#include "MyLibft.hpp"
 #include <iostream>
 
 /*분산 책임 클래스 설계.
