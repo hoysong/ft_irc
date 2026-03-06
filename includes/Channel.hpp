@@ -28,6 +28,7 @@ class Channel
 		Channel( IServerController &ircServer );
 		~Channel( void );
 
+		std::string membersToString(void);
 		bool addMember( Client &client, const std::string &passwd);
 		bool removeMember( Client &client );
 		bool removeMember( const std::string &target );

@@ -71,16 +71,7 @@ void    IRCServer::handleQuit(Client& client, const paramVector& params)
 	addClientToRemove(client);
 }
 
-void    IRCServer::handleOper(Client& client, const paramVector& params)
-{
-	if (params.size() < 2)
-	{
-		Msg().errNotEnoughParam(client.getNickName(), "OPER").sendTo(client, *this);
-		return ;
-	}
-}
-
-// ==============================================================================
+/// ==============================================================================
 // 2. 메시지 전송 (Message Sending)
 // ==============================================================================
 
@@ -100,7 +91,7 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 		{ // server
 			Channel *channel;
 			if (m_channelManager.getChannel(current, channel))
-				channel->broadcastMsg(msg);
+				channel->broadcastMsg(line);
 			else
 			{
 				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client, *this);
@@ -175,8 +166,7 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 }
 
 void    IRCServer::handleNotice(Client& client, const paramVector& params)
-{
-}
+{ /*무응답*/ }
 
 // ==============================================================================
 // 3. 채널 조작 (Channel Operations)
@@ -274,14 +264,6 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 			);
 }
 
-void    IRCServer::handleNames(Client& client, const paramVector& params)
-{
-}
-
-void    IRCServer::handleList(Client& client, const paramVector& params)
-{
-}
-
 void    IRCServer::handleInvite(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
@@ -333,18 +315,6 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 // 4. 서버 및 유저 정보 (Server Queries & User Info)
 // ==============================================================================
 
-void    IRCServer::handleWho(Client& client, const paramVector& params)
-{
-}
-
-void    IRCServer::handleWhois(Client& client, const paramVector& params)
-{
-}
-
-void    IRCServer::handleWhowas(Client& client, const paramVector& params)
-{
-}
-
 void    IRCServer::handlePing(Client& client, const paramVector& params)
 {
 	if (params.empty())
@@ -360,21 +330,5 @@ void    IRCServer::handlePing(Client& client, const paramVector& params)
 }
 
 void    IRCServer::handlePong(Client& client, const paramVector& params)
-{
-}
-
-// ==============================================================================
-// 5. 기타 편의/보너스 (Miscellaneous / Optional)
-// ==============================================================================
-
-void    IRCServer::handleCap(Client& client, const paramVector& params)
-{
-}
-
-void    IRCServer::handleAway(Client& client, const paramVector& params)
-{
-}
-
-void    IRCServer::handleKill(Client& client, const paramVector& params)
 {
 }
