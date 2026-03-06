@@ -28,6 +28,12 @@ class ChannelManager
 				const std::string &channelName,
 				const std::string &target,
 				const std::string &msg);
+		/* 존재하는 채널에 대해서만 접근할 수 있도록 만들어주는 함수. */
+		bool broadcastToChannel( const std::string &channelName,
+				const std::string &msg );
+		bool syncNickToChannel( const std::string &channelName,
+				Client &client,
+				const std::string &newNick);
 //		bool removeClientFromChannel(
 //				Client &client,
 //				const std::string &msg,

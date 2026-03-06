@@ -2,10 +2,12 @@
 #include "Msg.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
-#include <exception>
+#include "MyLibft.hpp"
+#include "ircError.hpp"
 #include <iostream>
 #include <map>
 #include <set>
+#include <sstream>
 
 void Channel::announce( void )
 {
@@ -35,26 +37,17 @@ void Channel::announce( void )
 	}
 }
 
-void Channel::broadcastMsg( const std::string &msg )
+bool Channel::broadcastMsg( const std::string &msg )
 {
 	std::map<std::string, Client *>::iterator iter = m_members.begin();
 	std::map<std::string, Client *>::iterator iter_end = m_members.end();
 	while (iter != iter_end)
 	{
-		sendMsg(iter->second->getFd(), msg);
+		if (!sendMsg(iter->second->getFd(), msg))
+			m_server.addClientToRemove(*(iter->second));
 		iter++;
 	}
-}
-
-void Channel::quitBroadcast( Client &client, const std::string &msg)
-{
-	std::map<std::string, Client *>::iterator iter = m_members.begin();
-	std::map<std::string, Client *>::iterator iter_end = m_members.end();
-	while (iter != iter_end)
-	{
-		sendMsg(iter->second->getFd(), msg);
-		iter++;
-	}
+	return (true);
 }
 
 void Channel::newMemberBroadcast(Client &client)
@@ -67,28 +60,36 @@ void Channel::newMemberBroadcast(Client &client)
 			.setPrefix(client.getMsgPrefix())
 			.addParam("JOIN")
 			.addParam(m_channelName)
-			.sendTo(client.getFd());
+			.sendTo(*(iter->second), m_server);
 		iter++;
 	}
 }
 
-void Channel::broadcastNickChanged( Client &client, const std::string &newNick)
+void Channel::syncNick( Client &client, const std::string &newNick)
 {
-	/* 여기까지 함수호출로 들어왔으면 정제된 데이터만 있을 것임.
-	 * 신뢰하고 로직 실행해도 됨.
-	 * 문제가 있다면 이전에 있는 것이므로 여기서 데이터 검증없이 돌러서 터뜨려야 함.
-	 */
-	std::map<std::string, Client *>::iterator iter = m_members.begin();
-	std::map<std::string, Client *>::iterator iter_end = m_members.end();
-	while (iter != iter_end)
-	{
-		sendMsg(iter->second->getFd(), client.getMsgPrefix() + " NICK :" + newNick + "\r\n");
-		iter++;
-	}
-	// 브로드캐스트 끝났으니 닉변 클라이언트 노드 교체.
-	iter = m_members.find(client.getNickName());
+	std::map<std::string, Client *>::iterator iter = m_members.find(client.getNickName());
+	if (iter == m_members.end())
+		return ; // 없으면 무시.
 	m_members.erase(iter);
 	m_members[newNick] = &client;
+}
+
+std::string Channel::membersToString(void)
+{
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iterEnd = m_members.end();
+	std::string members;
+	while (iter != iterEnd)
+	{
+		if(m_opers.find(iter->second) != m_opers.end())
+			members += "@" + iter->second->getNickName() + ' ';
+		else
+			members += iter->second->getNickName() + ' ';
+		iter++;
+	}
+	if (members.rbegin() != members.rend() && *members.rbegin() == ' ')
+		members.erase(members.length() - 1);
+	return (members);
 }
 
 bool Channel::addMember( Client &client, const std::string &passwd )
@@ -101,54 +102,57 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 	}
 	if (passwd != m_passwd)
 	{
-		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client.getFd());
+		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
 	m_members[client.getNickName()] = &client;
 	client.addJoinedChannel(*this);
-	newMemberBroadcast(client);
+
+	broadcastMsg(
+			//:nobody2!hoysong@127.0.0.1 JOIN :#test
+			Msg()
+			.setPrefix(client.getMsgPrefix())
+			.addParam("JOIN")
+			.addParam(m_channelName)
+			.serialize() +
+			//:irc.local 353 nobody2 = #test :@nobody2
+			Msg()
+			.setPrefix(SERVER_PREFIX)
+			.numeric(RPL_NAMREPLY)
+			.addParam(client.getNickName())
+			.addParam("=")
+			.addParam(m_channelName)
+			.addParam(membersToString())
+			.serialize() +
+			//:irc.local 366 nobody2 #test :End of /NAMES list.
+			Msg()
+			.setPrefix(SERVER_PREFIX)
+			.numeric(RPL_ENDOFNAMES)
+			.addParam(client.getNickName())
+			.addParam(m_channelName)
+			.addParam("End of /NAMES list.")
+			.serialize()
+		    );
 	std::cout << "success to add member to channel " << m_channelName << std::endl;
 	return (true);
 }
-bool Channel::removeMember( Client &client, const std::string &msg )
+bool Channel::removeMember( Client &client )
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
 	if (iter == m_members.end())
 		return (false); // 이미 없음.
-	quitBroadcast(client, msg);
 	iter->second->removeJoinedChannel(*this); // 유저 객체에서 채널목록 삭제.
 	m_members.erase(iter); // 채널측 유저목록 삭제.
 	removeChannelOper(client); // 오퍼라면 삭제.
 	return (true);
 }
 
-bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
-{
-	if (m_inviteOnly)
-	{
-		if (!findMember(client))
-		{
-			Msg().errCantSendToChan(client.getNickName(), m_channelName).sendTo(client.getFd());
-			return (false);
-		}
-	}
-
-	std::map<std::string, Client *>::iterator iter = this->m_members.begin();
-	std::map<std::string, Client *>::iterator iter_end = this->m_members.end();
-	while (iter != iter_end)
-	{
-		sendMsg(iter->second->getFd(), msg);
-		iter++;
-	}
-	return (true);
-}
-
-bool Channel::removeMember( const std::string &target, const std::string &msg)
+bool Channel::removeMember( const std::string &target )
 {
 	std::map<std::string, Client *>::iterator iter = m_members.find(target);
 	if (iter == m_members.end())
 		return (false);
-	return (removeMember(*(iter->second), msg));
+	return (removeMember(*(iter->second)));
 }
 
 bool Channel::addChannelOper( Client &client)
@@ -265,18 +269,11 @@ void Channel::setLimitMode( int value )
 {
 	this->m_maxMembers = value;
 }
-#include <sstream>
-#include "MyLibft.hpp"
 bool Channel::setLimitMode( const std::string &value )
 {
-	if (value.size() > 3)
+	int limit;
+	if (!MyLibft::aToInt(value, limit))
 		return (false);
-	try {
-		m_maxMembers = MyLibft::myAtoi(value);
-	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
-		return (false);
-	}
 	return (true);
 }
 

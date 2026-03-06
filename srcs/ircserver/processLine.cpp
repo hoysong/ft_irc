@@ -1,6 +1,8 @@
 #include "IRCServer.hpp"
+#include "Msg.hpp"
 #include <cctype>
 #include <vector>
+#include <iostream>
 
 void getPrefix( std::string &line )
 {
@@ -105,17 +107,16 @@ void IRCServer::dispatch( Client &client, t_message &message )
 		&& message.command != "NICK"
 		)
 	{
-		Msg().errNotRegistered(client.getNickName());
+		Msg().errNotRegistered(client.getNickName()).sendTo(client, *this);
 		return ;
 	}
 	/* 이제 command에 따른 적절한 dispatch. */
-	std::map<std::string, commandHandler>::iterator \
-		iter = m_commands.find(message.command);
+	std::map<std::string, commandHandler>::iterator iter = m_commands.find(message.command);
 	if (iter == m_commands.end())
 	{ // 없는 명령이거나 못찾음.
 		std::string str;
 
-		Msg().errUnknownCmd(client.getNickName(), message.command);
+		Msg().errUnknownCmd(client.getNickName(), message.command).sendTo(client, *this);
 		return ;
 	}
 	std::cout << "command found: " << message.command << std::endl;

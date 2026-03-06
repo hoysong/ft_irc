@@ -1,4 +1,5 @@
 #include "IRCServer.hpp"
+#include "Msg.hpp"
 
 void IRCServer::welcomeMsg( Client &client )
 {

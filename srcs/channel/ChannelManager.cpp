@@ -1,7 +1,6 @@
 #include "ChannelManager.hpp"
 #include "Channel.hpp"
 #include "IServerController.hpp"
-#include "ircError.hpp"
 #include "Msg.hpp"
 #include <iostream>
 #include <utility>
@@ -49,6 +48,16 @@ bool ChannelManager::addClientToChannel(
 	return (true);
 }
 
+bool ChannelManager::broadcastToChannel( const std::string &channelName, const std::string &msg )
+{
+	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
+	if (iter == m_channels.end())
+		return (false);
+	if (!iter->second.broadcastMsg(msg))
+		return (false);
+	return (true);
+}
+
 bool ChannelManager::partClientFromChannel(
 		Client &client,
 		const std::string &channelName,
@@ -58,16 +67,15 @@ bool ChannelManager::partClientFromChannel(
 	chanMap::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		Msg().errNoSuchChannel(client.getNickName(), iter->first).sendTo(client.getFd());
+		Msg().errNoSuchChannel(client.getNickName(), iter->first).sendTo(client, m_server);
 		return (false);
 	}
 
-	if (!(iter->second.removeMember(client, msg)))
+	if (!(iter->second.removeMember(client)))
 	{
-		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client.getFd());
+		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client, m_server);
 		return (false);
 	}
-
 	if (iter->second.isChannelEmpty())
 		m_channels.erase(iter);
 	return (true);
@@ -82,7 +90,7 @@ bool ChannelManager::kickClientFromChannel(
 	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		Msg().errNoSuchChannel(client.getNickName(), channelName).sendTo(client.getFd());
+		Msg().errNoSuchChannel(client.getNickName(), channelName).sendTo(client, m_server);
 		return (false);
 	}
 
@@ -94,17 +102,18 @@ bool ChannelManager::kickClientFromChannel(
 			.addParam(target)
 			.addParam(channelName)
 			.addParam("They aren't on that channel")
-			.sendTo(client.getFd());
+			.sendTo(client, m_server);
 		return (false);
 	}
 
 	if (!iter->second.isChannelOper(client))
 	{
-		Msg().errChanOpPrivsNeeded(client.getNickName(), channelName).sendTo(client.getFd());
+		Msg().errChanOpPrivsNeeded(client.getNickName(), channelName).sendTo(client, m_server);
 		return (false);
 	}
 
-	iter->second.removeMember(target, msg);
+	iter->second.removeMember(target);
+	iter->second.broadcastMsg(msg);
 
 	return (true);
 }

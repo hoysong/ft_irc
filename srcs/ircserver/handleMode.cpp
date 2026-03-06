@@ -11,22 +11,22 @@ void IRCServer::setChannelMode(Client &client,
 	Channel *channel;
 	if (!m_channelManager.getChannel(target, channel))
 	{
-		Msg().errNoSuchChannel(client.getNickName(), target).sendTo(client.getFd());
+		Msg().errNoSuchChannel(client.getNickName(), target).sendTo(client, *this);
 		return ;
 	}
 	if (modes.empty())
 	{ // 모드 조회
-		Msg().rplChannelModeIs(client.getNickName(), channel->getChannelName(), channel->modeToString()).sendTo(client.getFd());
+		Msg().rplChannelModeIs(client.getNickName(), channel->getChannelName(), channel->modeToString()).sendTo(client, *this);
 		return ;
 	}
 	if(!channel->findMember(client))
 	{ // 멤버가 아님.
-		Msg().errNotOnChannel(client.getNickName(), target).sendTo(client.getFd());
+		Msg().errNotOnChannel(client.getNickName(), target).sendTo(client, *this);
 		return ;
 	}
 	else if (!channel->isChannelOper(client))
 	{ // 오퍼가 아님.
-		Msg().errChanOpPrivsNeeded(client.getNickName(), target).sendTo(client.getFd());
+		Msg().errChanOpPrivsNeeded(client.getNickName(), target).sendTo(client, *this);
 		return ;
 	}
 	bool add = false;
@@ -184,7 +184,7 @@ void IRCServer::setCliientMode(Client &client,
 				.addParam(client.getNickName())
 				.addParam(target)
 				.addParam("Cannot change mode for other user")
-				.sendTo(client.getFd());
+				.sendTo(client, *this);
 		}
 		else
 			{
@@ -198,7 +198,7 @@ void IRCServer::setCliientMode(Client &client,
 					.numeric(RPL_UMODEIS)
 					.addParam(client.getNickName())
 					.addParam(trailing)
-					.sendTo(client.getFd());
+					.sendTo(client, *this);
 			}
 		return ;
 	}
@@ -255,7 +255,7 @@ void IRCServer::setCliientMode(Client &client,
 			.addParam(client.getNickName())
 			.addParam(trailingBuffer)
 			.trailing(false)
-			.sendTo(client.getFd());
+			.sendTo(client, *this);
 	}
 }
 void IRCServer::modeProcess(Client &client,
@@ -297,7 +297,7 @@ void    IRCServer::handleMode(Client& client, const paramVector& params)
 	}
 	if (target.empty())
 	{ // 타겟 비었으면 파라미터가 없음.
-		Msg().errNotEnoughParam(client.getNickName(), "MODE").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "MODE").sendTo(client, *this);
 		return ;
 	}
 	modeProcess(client, target, modes, modeTargets);

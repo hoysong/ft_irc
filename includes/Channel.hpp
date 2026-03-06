@@ -28,9 +28,10 @@ class Channel
 		Channel( IServerController &ircServer );
 		~Channel( void );
 
+		std::string membersToString(void);
 		bool addMember( Client &client, const std::string &passwd);
-		bool removeMember( Client &client, const std::string &msg);
-		bool removeMember( const std::string &target, const std::string &msg);
+		bool removeMember( Client &client );
+		bool removeMember( const std::string &target );
 		bool inviteMember( Client &client, Client &invited );
 
 		bool addChannelOper( Client &client);
@@ -56,9 +57,9 @@ class Channel
 		void setLimitMode( int value );
 		bool setLimitMode( const std::string &value );
 
-		void broadcastNickChanged( Client &client, const std::string &newNick);
-		bool broadcastPrivmsg(Client &client, const std::string &msg);
-		void broadcastMsg( const std::string &msg );
+		void syncNick( Client &client, const std::string &newNick);
+//		bool broadcastPrivmsg(Client &client, const std::string &msg);
+		bool broadcastMsg( const std::string &msg );
 
 		std::string getPasswd( void );
 		std::string getChannelName( void );

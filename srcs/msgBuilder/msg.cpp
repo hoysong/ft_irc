@@ -76,9 +76,14 @@ Msg & Msg::clear( void )
 	m_trailing = true;
 	return (*this);
 }
-bool Msg::sendTo( int fd )
+bool Msg::sendTo( Client &client, IServerController &server )
 {
-	return (sendMsg(fd, serialize()));
+	if (!sendMsg(client.getFd(), serialize()))
+	{
+		server.addClientToRemove(client);
+		return false;
+	}
+	return true;
 }
 /*constructor*/
 Msg::Msg( void ) : m_trailing(true), m_numeric(-1) { }
