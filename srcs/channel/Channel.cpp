@@ -59,7 +59,7 @@ void Channel::newMemberBroadcast(Client &client)
 			.setPrefix(client.getMsgPrefix())
 			.addParam("JOIN")
 			.addParam(m_channelName)
-			.sendTo(iter->second->getFd());
+			.sendTo(*(iter->second), m_server);
 		iter++;
 	}
 }
@@ -83,7 +83,7 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 	}
 	if (passwd != m_passwd)
 	{
-		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client.getFd());
+		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
 	m_members[client.getNickName()] = &client;

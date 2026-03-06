@@ -18,7 +18,7 @@ void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &k
 				.addParam(client.getNickName())
 				.addParam(*servIter)
 				.addParam("Invalid channel name")
-				.sendTo(client.getFd());
+				.sendTo(client, *this);
 		else if (keyIter == keys.end())
 			m_channelManager.addClientToChannel(client, *servIter, "");
 		else
@@ -33,7 +33,7 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 {
 	if (params.size() < 1)
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client, *this);
 		return ;
 	}
 	paramVector servers;
@@ -57,7 +57,7 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		splitMultiTarget(params[1], keys); // 콤마 기준 split
 	if (servers.empty() && keys.empty())
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client, *this);
 		return ;
 	}
 	/* 키가 채널보다 많으면 빈 값으로 취급할거임. */

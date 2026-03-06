@@ -50,7 +50,7 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client, *this);
 	}
 	
 	/*서버 멀티타겟 스플릿.*/
@@ -58,7 +58,7 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 	splitMultiTarget(params[0], channels);
 	if (channels.empty())
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client, *this);
 		return ;
 	}
 
@@ -67,13 +67,13 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 	splitMultiTarget(params[1], clients);
 	if (clients.empty())
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client, *this);
 		return ;
 	}
 
 	if (channels.size() != 1 && (channels.size() != clients.size()))
 	{ // 1대1 매칭인 경우 파라미터 에러 반환
-		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client, *this);
 		return ;
 	}
 	if (params.size() < 3)

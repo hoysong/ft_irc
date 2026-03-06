@@ -49,12 +49,12 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
 	{
-		Msg().errAlreadyRegist(client.getNickName()).sendTo(client.getFd());
+		Msg().errAlreadyRegist(client.getNickName()).sendTo(client, *this);
 		return ;
 	}
 	else if (params.size() < 4)
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "USER").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "USER").sendTo(client, *this);
 		return ;
 	}
 	std::string userName = getUserName(params[0]);

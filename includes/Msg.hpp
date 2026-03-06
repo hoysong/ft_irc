@@ -1,6 +1,7 @@
 #ifndef MSG_HPP
 # define MSG_HPP
 # include "Client.hpp"
+# include "IServerController.hpp"
 # include <string>
 # include <vector>
 # define SERVER_PREFIX "ft_irc.local"
@@ -22,7 +23,7 @@ class Msg
 		Msg & addParam( const std::string &param );
 		Msg & trailing( bool flag );
 		Msg & clear( void );
-		bool sendTo( int fd );
+		bool sendTo( Client &client, IServerController &server );
 		/*조립한 내용들을 메시지로 이어붙이기.*/
 		std::string serialize( void );
 

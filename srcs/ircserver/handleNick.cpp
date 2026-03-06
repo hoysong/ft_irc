@@ -37,18 +37,18 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 {
 	if (!params.size())
 	{ // 파라미터 부족.
-		Msg().errNoNickGiven(client.getNickName()).sendTo(client.getFd());
+		Msg().errNoNickGiven(client.getNickName()).sendTo(client, *this);
 		return ;
 	}
 	if ( !isValidNick(params[0]) )
 	{
-		Msg().errOneousNick(client.getNickName(), params[0]).sendTo(client.getFd());
+		Msg().errOneousNick(client.getNickName(), params[0]).sendTo(client, *this);
 		return ;
 	}
 	if ( client.getNickName() == params[0] )
 		return ; // 이미 동일하니 무시하기.
 	if (m_clientManager.isNickExists(params[0])) // 이미 사용중인 닉임.
-		Msg().errNickInUse(client.getNickName(), params[0]).sendTo(client.getFd());
+		Msg().errNickInUse(client.getNickName(), params[0]).sendTo(client, *this);
 
 	/***********************/
 	/* 닉변 싱크 맞춰주기. */

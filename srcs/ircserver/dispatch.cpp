@@ -31,19 +31,19 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
 	{
-		Msg().errAlreadyRegist(client.getNickName()).sendTo(client.getFd());
+		Msg().errAlreadyRegist(client.getNickName()).sendTo(client, *this);
 		return ;
 	}
 	else if (!params.size())
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "PASS").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "PASS").sendTo(client, *this);
 		return ;
 	}
 	else if (client.isAuthed())
 		return;
 	else if (params[0] != m_passwd)
 	{
-		Msg().errPasswdMismatch(client.getNickName()).sendTo(client.getFd());
+		Msg().errPasswdMismatch(client.getNickName()).sendTo(client, *this);
 		addClientToRemove(client);
 		return ;
 	}
@@ -75,7 +75,7 @@ void    IRCServer::handleOper(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "OPER").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "OPER").sendTo(client, *this);
 		return ;
 	}
 }
@@ -103,7 +103,7 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 				channel->broadcastMsg(msg);
 			else
 			{
-				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client.getFd());
+				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client, *this);
 			}
 		}
 		else
@@ -123,7 +123,7 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 			.numeric(ERR_NORECIPIENT)
 			.addParam(client.getNickName())
 			.addParam("No recipient given (PRIVMSG)")
-			.sendTo(client.getFd());
+			.sendTo(client, *this);
 		return ;
 	}
 	else if (params.size() == 1)
@@ -133,7 +133,7 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 			.numeric(ERR_NOTEXTTOSEND)
 			.addParam(client.getNickName())
 			.addParam("No text to send")
-			.sendTo(client.getFd());
+			.sendTo(client, *this);
 		return ;
 	}
 	else if (params.size() > 2)
@@ -145,7 +145,7 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 				.numeric(ERR_NOTEXTTOSEND)
 				.addParam(client.getNickName())
 				.addParam("No text to send")
-				.sendTo(client.getFd());
+				.sendTo(client, *this);
 			return ;
 		}
 	}
@@ -167,7 +167,7 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 				.addParam(client.getNickName())
 				.addParam(params[0])
 				.addParam("Too many targets (max: 4)")
-				.sendTo(client.getFd());
+				.sendTo(client, *this);
 			return ;
 	}
 
@@ -216,14 +216,14 @@ void    IRCServer::handlePart(Client& client, const paramVector& params)
 {
 	if (params.empty())
 	{ // 파라미터 부족
-		Msg().errNotEnoughParam(client.getNickName(), "PART").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "PART").sendTo(client, *this);
 		return ;
 	}
 	std::vector<std::string> targets;
 	splitMultiTarget(params[0], targets);
 	if (targets.empty() && params.size() == 1)
 	{ // 파라미터 부족
-		Msg().errNotEnoughParam(client.getNickName(), "PART").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "PART").sendTo(client, *this);
 		return ;
 	}
 	if (params.size() == 2)
@@ -236,17 +236,17 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 {
 	if (params.empty())
 	{ // 파라미터 부족
-		Msg().errNotEnoughParam(client.getNickName(), "TOPIC").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "TOPIC").sendTo(client, *this);
 		return ;
 	}
 	if(!m_channelManager.findChannel(params[0]))
 	{
-		Msg().errNoSuchChannel(client.getNickName(), params[0]).sendTo(client.getFd());
+		Msg().errNoSuchChannel(client.getNickName(), params[0]).sendTo(client, *this);
 		return ;
 	}
 	if (!client.isInChannel(params[0]))
 	{
-		Msg().errNotOnChannel(client.getNickName(), params[0]).sendTo(client.getFd());
+		Msg().errNotOnChannel(client.getNickName(), params[0]).sendTo(client, *this);
 		return ;
 	}
 	Channel *channel;
@@ -254,9 +254,9 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 	if (params.size() == 1)
 	{
 		if (channel->getTopic().empty())
-			Msg().rplNoTopic(client.getNickName(), params[0]).sendTo(client.getFd());
+			Msg().rplNoTopic(client.getNickName(), params[0]).sendTo(client, *this);
 		else
-			Msg().rplTopic(client.getNickName(), params[0], channel->getTopic()).sendTo(client.getFd());
+			Msg().rplTopic(client.getNickName(), params[0], channel->getTopic()).sendTo(client, *this);
 		return ;
 	}
 	if (channel->isTopicMode() && !channel->isChannelOper(client.getNickName()))
@@ -286,29 +286,29 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 {
 	if (params.size() < 2)
 	{ // 파라미터 부족
-		Msg().errNotEnoughParam(client.getNickName(), "INVITE").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "INVITE").sendTo(client, *this);
 		return ;
 	}
 	if (!m_clientManager.isNickExists(params[0]))
 	{
-		Msg().errNoSuchNick(client.getNickName(), params[0]).sendTo(client.getFd());
+		Msg().errNoSuchNick(client.getNickName(), params[0]).sendTo(client, *this);
 		return ;
 	}
 	if (!client.isInChannel(params[1]))
 	{
-		Msg().errNotOnChannel(client.getNickName(), params[1]).sendTo(client.getFd());
+		Msg().errNotOnChannel(client.getNickName(), params[1]).sendTo(client, *this);
 		return ;
 	}
 	Channel *channel;
 	m_channelManager.getChannel(params[1], channel);
 	if(channel->findMember(params[1]))
 	{
-		Msg().errUserOnChannel(client.getNickName(), params[0], params[1]).sendTo(client.getFd());
+		Msg().errUserOnChannel(client.getNickName(), params[0], params[1]).sendTo(client, *this);
 		return ;
 	}
 	if (!channel->isChannelOper(client.getNickName()))
 	{
-		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client.getFd());
+		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client, *this);
 		return ;
 	}
 	/*여기까지 예외처리 끝.*/
@@ -320,13 +320,13 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 		.addParam(params[1])
 		.addParam(params[0])
 		.trailing(false)
-		.sendTo(client.getFd());
+		.sendTo(client, *this);
 	Msg()
 		.setPrefix(client.getMsgPrefix())
 		.addParam("INVITE")
 		.addParam(params[0])
 		.addParam(params[1])
-		.sendTo(invitedClient.getFd());
+		.sendTo(invitedClient, *this);
 }
 
 // ==============================================================================
@@ -349,14 +349,14 @@ void    IRCServer::handlePing(Client& client, const paramVector& params)
 {
 	if (params.empty())
 	{
-		Msg().errNotEnoughParam(client.getNickName(), "PING").sendTo(client.getFd());
+		Msg().errNotEnoughParam(client.getNickName(), "PING").sendTo(client, *this);
 		return ;
 	}
 	Msg().setPrefix(SERVER_PREFIX)
 		.addParam("PONG")
 		.addParam(SERVER_PREFIX)
 		.addParam(params[0])
-		.sendTo(client.getFd());
+		.sendTo(client, *this);
 }
 
 void    IRCServer::handlePong(Client& client, const paramVector& params)

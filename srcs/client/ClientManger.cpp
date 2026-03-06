@@ -98,7 +98,7 @@ bool ClientManager::sendPrivmsg(Client &client, const std::string &name, const s
 	std::map<std::string, Client *>::iterator iter = m_nameBased.find(name);
 	if (iter == m_nameBased.end())
 	{
-		Msg().errNoSuchNick(client.getNickName(), name).sendTo(client.getFd());
+		Msg().errNoSuchNick(client.getNickName(), name).sendTo(client, m_server);
 		return (false);
 	}
 	if (!sendMsg(iter->second->getFd(), msg))

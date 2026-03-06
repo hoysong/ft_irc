@@ -67,13 +67,13 @@ bool ChannelManager::partClientFromChannel(
 	chanMap::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		Msg().errNoSuchChannel(client.getNickName(), iter->first).sendTo(client.getFd());
+		Msg().errNoSuchChannel(client.getNickName(), iter->first).sendTo(client, m_server);
 		return (false);
 	}
 
 	if (!(iter->second.removeMember(client)))
 	{
-		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client.getFd());
+		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client, m_server);
 		return (false);
 	}
 	if (iter->second.isChannelEmpty())
@@ -90,7 +90,7 @@ bool ChannelManager::kickClientFromChannel(
 	std::map<std::string, Channel>::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		Msg().errNoSuchChannel(client.getNickName(), channelName).sendTo(client.getFd());
+		Msg().errNoSuchChannel(client.getNickName(), channelName).sendTo(client, m_server);
 		return (false);
 	}
 
@@ -102,13 +102,13 @@ bool ChannelManager::kickClientFromChannel(
 			.addParam(target)
 			.addParam(channelName)
 			.addParam("They aren't on that channel")
-			.sendTo(client.getFd());
+			.sendTo(client, m_server);
 		return (false);
 	}
 
 	if (!iter->second.isChannelOper(client))
 	{
-		Msg().errChanOpPrivsNeeded(client.getNickName(), channelName).sendTo(client.getFd());
+		Msg().errChanOpPrivsNeeded(client.getNickName(), channelName).sendTo(client, m_server);
 		return (false);
 	}
 
