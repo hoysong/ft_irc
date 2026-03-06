@@ -49,17 +49,6 @@ bool Channel::broadcastMsg( const std::string &msg )
 	return (true);
 }
 
-void Channel::quitBroadcast( Client &client, const std::string &msg)
-{
-	std::map<std::string, Client *>::iterator iter = m_members.begin();
-	std::map<std::string, Client *>::iterator iter_end = m_members.end();
-	while (iter != iter_end)
-	{
-		sendMsg(iter->second->getFd(), msg);
-		iter++;
-	}
-}
-
 void Channel::newMemberBroadcast(Client &client)
 {
 	std::map<std::string, Client *>::iterator iter = m_members.begin();
@@ -123,26 +112,17 @@ bool Channel::removeMember( const std::string &target )
 	return (removeMember(*(iter->second)));
 }
 
-bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
-{
-	if (m_inviteOnly)
-	{
-		if (!findMember(client))
-		{
-			Msg().errCantSendToChan(client.getNickName(), m_channelName).sendTo(client.getFd());
-			return (false);
-		}
-	}
-
-	std::map<std::string, Client *>::iterator iter = this->m_members.begin();
-	std::map<std::string, Client *>::iterator iter_end = this->m_members.end();
-	while (iter != iter_end)
-	{
-		sendMsg(iter->second->getFd(), msg);
-		iter++;
-	}
-	return (true);
-}
+//bool Channel::broadcastPrivmsg(Client &client, const std::string &msg)
+//{
+//	std::map<std::string, Client *>::iterator iter = this->m_members.begin();
+//	std::map<std::string, Client *>::iterator iter_end = this->m_members.end();
+//	while (iter != iter_end)
+//	{
+//		sendMsg(iter->second->getFd(), msg);
+//		iter++;
+//	}
+//	return (true);
+//}
 
 bool Channel::addChannelOper( Client &client)
 {

@@ -57,7 +57,7 @@ class Channel
 		bool setLimitMode( const std::string &value );
 
 		void syncNick( Client &client, const std::string &newNick);
-		bool broadcastPrivmsg(Client &client, const std::string &msg);
+//		bool broadcastPrivmsg(Client &client, const std::string &msg);
 		bool broadcastMsg( const std::string &msg );
 
 		std::string getPasswd( void );

@@ -98,24 +98,13 @@ bool ClientManager::sendPrivmsg(Client &client, const std::string &name, const s
 	std::map<std::string, Client *>::iterator iter = m_nameBased.find(name);
 	if (iter == m_nameBased.end())
 	{
-//		sendMsg(client.getFd(), errMsg(ERR_NOSUCHNICK, client, name, "No such nickname"));
 		Msg().errNoSuchNick(client.getNickName(), name).sendTo(client.getFd());
 		return (false);
 	}
-	sendMsg(iter->second->getFd(), msg);
+	if (!sendMsg(iter->second->getFd(), msg))
+		m_server.addClientToRemove(*(iter->second));
 	return (true);
 }
-
-/*sendMsg()는 send 실패를 봐야해서 Client가 존재하는지는 해당 함수 호출부에서 검사해야 함.*/
-//bool ClientManager::sendMsg( int fd, const std::string &msg )
-//{
-//	return (MyLibft::sendMsg(fd, msg));
-//}
-//bool ClientManager::sendMsg( Client &client, const std::string &msg )
-//{
-//	return (sendMsg(client.getFd(), msg));
-//}
-
 
 /**********************/
 /* add/remove Client. */
