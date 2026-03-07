@@ -91,7 +91,7 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 		{ // server
 			Channel *channel;
 			if (m_channelManager.getChannel(current, channel))
-				channel->broadcastMsg(line);
+				channel->broadcastMsg(line, client);
 			else
 			{
 				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client, *this);

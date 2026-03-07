@@ -50,6 +50,22 @@ bool Channel::broadcastMsg( const std::string &msg )
 	return (true);
 }
 
+bool Channel::broadcastMsg( const std::string &msg, Client &exclude )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
+	{
+		if (iter->second != &exclude)
+		{
+			if (!sendMsg(iter->second->getFd(), msg))
+				m_server.addClientToRemove(*(iter->second));
+		}
+		iter++;
+	}
+	return (true);
+}
+
 void Channel::newMemberBroadcast(Client &client)
 {
 	std::map<std::string, Client *>::iterator iter = m_members.begin();
