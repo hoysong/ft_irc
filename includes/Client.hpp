@@ -4,6 +4,7 @@
 # include <sys/socket.h> // recv(), ssize_t.
 # include <string>
 # include <map>
+# include <set>
 
 class Channel;
 
@@ -15,6 +16,7 @@ class Client
 		std::string m_buffer;
 		void appendBuffer( char *buffer, ssize_t size );
 		std::map<std::string, Channel *> m_channels;
+		std::set<Channel *> m_invitedChannels;
 
 		bool m_authed;
 		bool m_registered;
@@ -50,6 +52,9 @@ class Client
 
 		void setAuthed( void );
 		void setRegistered( void );
+
+		void addInvitedChannel ( Channel &channel );
+		void removeInvitedChannel ( Channel &channel );
 
 		void setUserName( const std::string &str );
 		void setInvisible( bool flag );

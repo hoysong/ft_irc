@@ -92,6 +92,18 @@ std::string Channel::membersToString(void)
 	return (members);
 }
 
+void Channel::addInvitedMember( Client &client )
+{
+	m_invitedMembers.insert(&client);
+}
+void Channel::removeInvitedMember( Client &client )
+{
+	std::set<Client *>::iterator iter = m_invitedMembers.find(&client);
+	if (iter == m_invitedMembers.end())
+		return ;
+	m_invitedMembers.erase(iter);
+}
+
 bool Channel::addMember( Client &client, const std::string &passwd )
 {
 	Channel::memberMap::iterator iter = m_members.find(client.getNickName());
@@ -372,4 +384,6 @@ Channel::Channel( IServerController &ircServer ) :
 Channel::~Channel( void )
 {
 	std::cout << "\t[Channel::~Channel()]: " << this << ":" << m_channelName + ":" + m_passwd << std::endl;
+	for(std::set<Client *>::iterator iter = m_invitedMembers.begin(); iter != m_invitedMembers.end(); iter ++)
+		(*iter)->removeInvitedChannel(*this);
 }

@@ -288,7 +288,7 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 		Msg().errUserOnChannel(client.getNickName(), params[0], params[1]).sendTo(client, *this);
 		return ;
 	}
-	if (!channel->isChannelOper(client.getNickName()))
+	if (channel->isInviteMode() && !channel->isChannelOper(client.getNickName()))
 	{
 		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client, *this);
 		return ;

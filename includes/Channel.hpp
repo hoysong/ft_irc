@@ -17,6 +17,7 @@ class Channel
 		typedef std::map<std::string, Client *> memberMap;
 		memberMap m_members;
 		std::set<Client *> m_opers;
+		std::set<Client *> m_invitedMembers;
 		std::string m_topic;
 
 		// need channel modes.
@@ -28,6 +29,8 @@ class Channel
 		Channel( IServerController &ircServer );
 		~Channel( void );
 
+		void addInvitedMember( Client &client );
+		void removeInvitedMember( Client &client );
 		std::string membersToString(void);
 		bool addMember( Client &client, const std::string &passwd);
 		bool removeMember( Client &client );

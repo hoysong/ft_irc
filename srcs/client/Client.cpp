@@ -231,6 +231,19 @@ bool Client::popLine( std::string &line )
 	return (true);
 }
 
+void Client::addInvitedChannel ( Channel &channel )
+{
+	m_invitedChannels.insert(&channel);
+}
+
+void Client::removeInvitedChannel ( Channel &channel )
+{
+	std::set<Channel *>::iterator iter = m_invitedChannels.find(&channel);
+	if (iter == m_invitedChannels.end())
+		return;
+	m_invitedChannels.erase(iter);
+}
+
 /***************************/
 /* constcurtor/destructor. */
 /***************************/
@@ -250,6 +263,8 @@ Client::~Client( void )
 {
 	std::cout << "\t[Client::~Client()] fd: " << m_fd << std::endl;
 	close(m_fd);
+	for(std::set<Channel *>::iterator iter = m_invitedChannels.begin(); iter != m_invitedChannels.end(); iter++)
+		(*iter)->removeInvitedMember(*this);
 };
 
 bool Client::operator < (const Client &ref ) const
