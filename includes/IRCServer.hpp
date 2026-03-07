@@ -6,7 +6,6 @@
 # include "ClientManager.hpp"
 # include "ChannelManager.hpp"
 # include "IServerController.hpp"
-#include <exception>
 # include <string>
 # include <map>
 # include <vector>

@@ -117,6 +117,11 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
+	if (m_inviteOnly && (m_invitedMembers.find(&client) == m_invitedMembers.end()))
+	{
+		Msg().errInviteOnlyChan(client.getNickName(), m_channelName).sendTo(client, m_server);
+		return (false);
+	}
 	m_members[client.getNickName()] = &client;
 	client.addJoinedChannel(*this);
 
@@ -126,25 +131,23 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 			.setPrefix(client.getMsgPrefix())
 			.addParam("JOIN")
 			.addParam(m_channelName)
-			.serialize() +
-			//:irc.local 353 nobody2 = #test :@nobody2
-			Msg()
-			.setPrefix(SERVER_PREFIX)
-			.numeric(RPL_NAMREPLY)
-			.addParam(client.getNickName())
-			.addParam("=")
-			.addParam(m_channelName)
-			.addParam(membersToString())
-			.serialize() +
-			//:irc.local 366 nobody2 #test :End of /NAMES list.
-			Msg()
-			.setPrefix(SERVER_PREFIX)
-			.numeric(RPL_ENDOFNAMES)
-			.addParam(client.getNickName())
-			.addParam(m_channelName)
-			.addParam("End of /NAMES list.")
 			.serialize()
 		    );
+
+	sendMsg(client.getFd(),
+			Msg()
+			.rplNamReply(client.getNickName(), m_channelName, membersToString())
+			.serialize() + 
+			Msg()
+			.rplEndOfNames(client.getNickName(), m_channelName)
+			.serialize()
+			);
+
+	if (m_topic.empty())
+		Msg().rplNoTopic(client.getNickName(), m_channelName).sendTo(client, m_server);
+	else
+		Msg().rplTopic(client.getNickName(), m_channelName, m_topic).sendTo(client, m_server);
+
 	std::cout << "success to add member to channel " << m_channelName << std::endl;
 	return (true);
 }
