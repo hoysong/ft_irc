@@ -309,6 +309,8 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 		.addParam(params[0])
 		.addParam(params[1])
 		.sendTo(invitedClient, *this);
+	channel->addInvitedMember(invitedClient);
+	invitedClient.addInvitedChannel(*channel);
 }
 
 // ==============================================================================

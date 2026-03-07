@@ -122,6 +122,11 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		Msg().errInviteOnlyChan(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
+	else
+	{
+		client.removeInvitedChannel(*this);
+		removeInvitedMember(client);
+	}
 	m_members[client.getNickName()] = &client;
 	client.addJoinedChannel(*this);
 
