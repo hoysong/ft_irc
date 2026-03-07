@@ -52,6 +52,8 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 					.addParam(iter->second->getChannelName())
 					.serialize()
 					);
+			iter->second->removeMember(client);
+			m_channelManager.eraseEmptyChannel(iter->second->getChannelName());
 		}
 		return ;
 	}
@@ -64,7 +66,5 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 		Msg().errNotEnoughParam(client.getNickName(), "JOIN").sendTo(client, *this);
 		return ;
 	}
-	/* 키가 채널보다 많으면 빈 값으로 취급할거임. */
-	/* 이미 존재하는 채널이면 생성이 아닌 참여. */
 	joinProcess(client, servers, keys);
 }

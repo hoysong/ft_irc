@@ -61,6 +61,13 @@ void    IRCServer::handleNick(Client& client, const paramVector& params)
 		iter->second->syncNick(client, params[0]);
 	}
 	m_clientManager.setClientNickName(client, params[0]);
+	if (channels.empty() && client.isRegistered())
+	{
+		if(!sendMsg(client.getFd(), msg))
+			addClientToRemove(client);
+		return;
+	}
+
 	if (client.getUserName().size()
 		&& client.isAuthed()
 		&& client.getNickName() != "*"

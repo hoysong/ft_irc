@@ -128,6 +128,8 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		removeInvitedMember(client);
 	}
 	m_members[client.getNickName()] = &client;
+	if (m_members.size() == 1)
+		addChannelOper(client);
 	client.addJoinedChannel(*this);
 
 	broadcastMsg(
@@ -294,6 +296,7 @@ bool Channel::setLimitMode( const std::string &value )
 	int limit;
 	if (!MyLibft::aToInt(value, limit))
 		return (false);
+	m_maxMembers = limit;
 	return (true);
 }
 

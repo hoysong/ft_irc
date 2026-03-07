@@ -378,6 +378,6 @@ Msg & Msg::rplChannelModeIs(const std::string &nick, const std::string &channelN
     addParam(nick);
     addParam(channelName);
     addParam(modes);
-    trailing(false);
+//    trailing(false);
     return (*this);
 }

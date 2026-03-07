@@ -182,17 +182,14 @@ void IRCServer::exitChannels( Client &client, std::vector<std::string> &targets,
 			m_channelManager.partClientFromChannel(client, *iter, 
 					Msg()
 					.setPrefix(client.getMsgPrefix())
-					.addParam(client.getNickName())
 					.addParam("PART")
 					.addParam(*iter)
-					.addParam("Left from channel")
 					.serialize()
 					);
 		else
 			m_channelManager.partClientFromChannel(client, *iter, 
 					Msg()
 					.setPrefix(client.getMsgPrefix())
-					.addParam(client.getNickName())
 					.addParam("PART")
 					.addParam(*iter)
 					.addParam(msg)

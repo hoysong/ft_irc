@@ -94,22 +94,20 @@ void IRCServer::setChannelMode(Client &client,
 					channel->setKeyMode(*iter);
 					trailingBuffer += "k";
 					params.push_back(*iter);
-					iter++;
 				}
 				else if (channel->isKeyMode() && add && (channel->getPasswd() != *iter))
 				{ // 비밀번호 변경 기존과 다른 경우에만 수행.
 					channel->setKeyMode(*iter);
 					trailingBuffer += "k";
 					params.push_back(*iter);
-					iter++;
 				}
 				else if (channel->isKeyMode() && channel->getPasswd() == *iter && remove)
 				{ // 비밀번호 삭제
 					channel->setKeyMode("");
 					trailingBuffer += "k";
 					params.push_back(*iter);
-					iter++;
 				}
+				iter++;
 			}
 		}
 		else if (modes[i] == 'o')
@@ -121,15 +119,14 @@ void IRCServer::setChannelMode(Client &client,
 					channel->addChannelOper(*iter);
 					trailingBuffer += "o";
 					params.push_back(*iter);
-					iter++;
 				}
 				else if (channel->isChannelOper(*iter) && remove)
 				{
 					channel->addChannelOper(*iter);
 					trailingBuffer += "o";
 					params.push_back(*iter);
-					iter++;
 				}
+				iter++;
 			}
 		}
 		else if (modes[i] == 'l')
@@ -145,15 +142,16 @@ void IRCServer::setChannelMode(Client &client,
 						params.push_back(channel->getStringChannelLimit());
 					}
 				}
-				else if (channel->isLimitMode() && remove)
-				{
-					channel->setLimitMode("-1");
-					trailingBuffer += "l";
-					iter++;
-				}
+			}
+			else if (channel->isLimitMode() && remove)
+			{
+				channel->setLimitMode("-1");
+				trailingBuffer += "l";
+				iter++;
 			}
 		}
 	}
+	channel->modeToString();
 	if (!trailingBuffer.empty())
 	{ // 변경 완료 메시지.
 		for(std::vector<std::string>::iterator iter = params.begin(); iter != params.end(); iter++)
@@ -161,7 +159,7 @@ void IRCServer::setChannelMode(Client &client,
 		channel->broadcastMsg(
 				Msg()
 				.setPrefix(client.getMsgPrefix())
-				.addParam(client.getNickName())
+				.addParam("MODE")
 				.addParam(target)
 				.addParam(trailingBuffer)
 				.trailing(false)
@@ -177,18 +175,29 @@ void IRCServer::setCliientMode(Client &client,
 {
 	if (modes.empty())
 	{ // 모드 조회 요청.
-		if (target != client.getNickName())
+
+		if (!m_clientManager.isNickExists(target))
 		{
 			Msg()
 				.setPrefix(SERVER_PREFIX)
+				.numeric(401)
 				.addParam(client.getNickName())
 				.addParam(target)
+				.addParam("No such nick")
+				.sendTo(client, *this);
+		}
+		else if (target != client.getNickName())
+		{
+			Msg()
+				.setPrefix(SERVER_PREFIX)
+				.numeric(502)
+				.addParam(client.getNickName())
 				.addParam("Cannot change mode for other user")
 				.sendTo(client, *this);
 		}
 		else
 			{
-				std::string trailing = ":+";
+				std::string trailing = "+";
 				if (client.isInvisible())
 					trailing += 'i';
 				if (client.isWallopos())
