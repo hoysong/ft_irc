@@ -58,7 +58,7 @@ class IRCServer : public IServerController
 		void	handleNick(Client& client, const paramVector& params);
 		void	handleUser(Client& client, const paramVector& params);
 		void	handleQuit(Client& client, const paramVector& params);
-		void	handleOper(Client& client, const paramVector& params);
+//		void	handleOper(Client& client, const paramVector& params);
 
 		// 2. 메시지 전송 (Message Sending)
 		void	handlePrivmsg(Client& client, const paramVector& params);
@@ -71,8 +71,8 @@ class IRCServer : public IServerController
 		void	handlePart(Client& client, const paramVector& params);
 			void exitChannels(Client &client, std::vector<std::string> &targets, const std::string &msg);
 		void	handleTopic(Client& client, const paramVector& params);
-		void	handleNames(Client& client, const paramVector& params);
-		void	handleList(Client& client, const paramVector& params);
+//		void	handleNames(Client& client, const paramVector& params);
+//		void	handleList(Client& client, const paramVector& params);
 		void	handleInvite(Client& client, const paramVector& params);
 		void	handleKick(Client& client, const paramVector& params);
 			void kickProcess(Client &client,
@@ -96,16 +96,16 @@ class IRCServer : public IServerController
 
 
 		// 4. 서버 및 유저 정보 (Server Queries & User Info)
-		void	handleWho(Client& client, const paramVector& params);
-		void	handleWhois(Client& client, const paramVector& params);
-		void	handleWhowas(Client& client, const paramVector& params);
+//		void	handleWho(Client& client, const paramVector& params);
+//		void	handleWhois(Client& client, const paramVector& params);
+//		void	handleWhowas(Client& client, const paramVector& params);
 		void	handlePing(Client& client, const paramVector& params);
 		void	handlePong(Client& client, const paramVector& params);
 
 		// 5. 기타 편의/보너스 (Miscellaneous / Optional)
-		void	handleCap(Client& client, const paramVector& params);
-		void	handleAway(Client& client, const paramVector& params);
-		void	handleKill(Client& client, const paramVector& params);
+//		void	handleCap(Client& client, const paramVector& params);
+//		void	handleAway(Client& client, const paramVector& params);
+//		void	handleKill(Client& client, const paramVector& params);
 		void	serverAnnounce( void );
 
 	public:

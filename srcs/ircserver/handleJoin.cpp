@@ -1,5 +1,6 @@
 #include "IRCServer.hpp"
 #include "Msg.hpp"
+#include "ircError.hpp"
 
 typedef std::vector<std::string> strVect;
 
@@ -15,6 +16,7 @@ void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &k
 		if ((*servIter)[0] != '#' || servIter->size() == 1)
 			Msg()
 				.setPrefix(SERVER_PREFIX)
+				.numeric(ERR_NOSUCHCHANNEL)
 				.addParam(client.getNickName())
 				.addParam(*servIter)
 				.addParam("Invalid channel name")
@@ -40,15 +42,17 @@ void    IRCServer::handleJoin(Client& client, const paramVector& params)
 	paramVector keys;
 	if (params[0] == "0")
 	{
-
-		client.broadcastJoinedChannels(
-				Msg()
-				.setPrefix(client.getMsgPrefix())
-				.addParam("PART")
-				.addParam("Parted by client")
-				.serialize()
-				);
-		addClientToRemove(client);
+		std::map<std::string, Channel *> channels = client.getJoinedChannel();
+		for(std::map<std::string, Channel *>::iterator iter = channels.begin(); iter != channels.end(); iter++)
+		{
+			iter->second->broadcastMsg(
+					Msg()
+					.setPrefix(client.getMsgPrefix())
+					.addParam("PART")
+					.addParam(iter->second->getChannelName())
+					.serialize()
+					);
+		}
 		return ;
 	}
 	else

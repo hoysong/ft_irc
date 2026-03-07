@@ -51,6 +51,7 @@ void    IRCServer::handleKick(Client& client, const paramVector& params)
 	if (params.size() < 2)
 	{
 		Msg().errNotEnoughParam(client.getNickName(), "KICK").sendTo(client, *this);
+		return ;
 	}
 	
 	/*서버 멀티타겟 스플릿.*/

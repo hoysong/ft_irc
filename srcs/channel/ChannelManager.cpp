@@ -2,6 +2,7 @@
 #include "Channel.hpp"
 #include "IServerController.hpp"
 #include "Msg.hpp"
+#include "ircError.hpp"
 #include <iostream>
 #include <utility>
 
@@ -94,10 +95,17 @@ bool ChannelManager::kickClientFromChannel(
 		return (false);
 	}
 
+	if (!iter->second.findMember(client))
+	{
+		Msg().errNotOnChannel(client.getNickName(), channelName).sendTo(client, m_server);
+		return (false);
+	}
+
 	if (!iter->second.findMember(target))
 	{
 		Msg()
 			.setPrefix(SERVER_PREFIX)
+			.numeric(ERR_USERNOTINCHANNEL)
 			.addParam(client.getNickName())
 			.addParam(target)
 			.addParam(channelName)

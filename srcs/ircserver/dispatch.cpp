@@ -283,7 +283,7 @@ void    IRCServer::handleInvite(Client& client, const paramVector& params)
 	}
 	Channel *channel;
 	m_channelManager.getChannel(params[1], channel);
-	if(channel->findMember(params[1]))
+	if(channel->findMember(params[0]))
 	{
 		Msg().errUserOnChannel(client.getNickName(), params[0], params[1]).sendTo(client, *this);
 		return ;
