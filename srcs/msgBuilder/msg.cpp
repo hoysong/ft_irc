@@ -76,6 +76,14 @@ Msg & Msg::clear( void )
 	m_trailing = true;
 	return (*this);
 }
+std::string Msg::closingLinkMsg( Client &client, const std::string &reason )
+{
+	std::string msg;
+	msg = "ERROR :Closing Link: "
+		+ client.getNickName() + "[" + client.getHost() + "] "
+		+ "(" + reason + ")" + "\r\n";
+	return (msg);
+}
 bool Msg::sendTo( Client &client, IServerController &server )
 {
 	if (!sendMsg(client.getFd(), serialize()))
