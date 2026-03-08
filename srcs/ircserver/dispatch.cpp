@@ -109,7 +109,7 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 		{ // server
 			Channel *channel;
 			if (m_channelManager.getChannel(current, channel))
-				channel->broadcastMsg(line, client);
+				channel->broadcastMsg(line);
 			else
 			{
 				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client, *this);
@@ -184,7 +184,14 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 }
 
 void    IRCServer::handleNotice(Client& client, const paramVector& params)
-{ /*무응답*/ }
+{ /*기본 무응답.*/
+	if (params.size() < 2)
+		return ;
+	else if (m_channelManager.findChannel(params[0]))
+		m_channelManager.broadcastToChannel(params[0], params[1]);
+	else if (m_clientManager.isNickExists(params[0]))
+		sendMsg(m_clientManager.getClient(params[0]).getFd(), params[1]);
+}
 
 // ==============================================================================
 // 3. 채널 조작 (Channel Operations)
@@ -266,15 +273,16 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 	}
 	if (channel->isTopicMode() && !channel->isChannelOper(client.getNickName()))
 	{
-		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]);
+		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client, *this);
 		return ;
 	}
-	channel->setTopic(params[2]);
+	channel->setTopic(params[1]);
 	channel->broadcastMsg(
 			Msg()
 			.setPrefix(client.getMsgPrefix())
 			.addParam("TOPIC")
 			.addParam(params[0])
+			.addParam(params[1])
 			.serialize()
 			);
 }
