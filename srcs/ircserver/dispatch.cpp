@@ -273,7 +273,7 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 	}
 	if (channel->isTopicMode() && !channel->isChannelOper(client.getNickName()))
 	{
-		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]);
+		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client, *this);
 		return ;
 	}
 	channel->setTopic(params[2]);
