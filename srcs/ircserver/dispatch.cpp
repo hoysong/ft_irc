@@ -276,7 +276,7 @@ void    IRCServer::handleTopic(Client& client, const paramVector& params)
 		Msg().errChanOpPrivsNeeded(client.getNickName(), params[1]).sendTo(client, *this);
 		return ;
 	}
-	channel->setTopic(params[2]);
+	channel->setTopic(params[1]);
 	channel->broadcastMsg(
 			Msg()
 			.setPrefix(client.getMsgPrefix())
