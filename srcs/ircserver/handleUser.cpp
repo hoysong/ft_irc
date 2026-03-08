@@ -57,6 +57,11 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 		Msg().errNotEnoughParam(client.getNickName(), "USER").sendTo(client, *this);
 		return ;
 	}
+	else if (params[3].empty())
+	{
+		Msg().errNotEnoughParam(client.getNickName(), "USER").sendTo(client, *this);
+		return ;
+	}
 	std::string userName = getUserName(params[0]);
 	if (userName.empty())
 		client.setUserName( "unknownUserName" );
