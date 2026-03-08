@@ -50,6 +50,22 @@ bool Channel::broadcastMsg( const std::string &msg )
 	return (true);
 }
 
+bool Channel::broadcastMsg( const std::string &msg, Client &exclude )
+{
+	std::map<std::string, Client *>::iterator iter = m_members.begin();
+	std::map<std::string, Client *>::iterator iter_end = m_members.end();
+	while (iter != iter_end)
+	{
+		if (iter->second != &exclude)
+		{
+			if (!sendMsg(iter->second->getFd(), msg))
+				m_server.addClientToRemove(*(iter->second));
+		}
+		iter++;
+	}
+	return (true);
+}
+
 void Channel::newMemberBroadcast(Client &client)
 {
 	std::map<std::string, Client *>::iterator iter = m_members.begin();
@@ -117,8 +133,13 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
-	if (m_inviteOnly && (m_invitedMembers.find(&client) == m_invitedMembers.end()))
+	if (m_maxMembers <= m_members.size())
 	{
+		Msg().errChannelIsFull(client.getNickName(), m_channelName).sendTo(client, m_server);
+		return (false);
+	}
+	if (m_inviteOnly && (m_invitedMembers.find(&client) == m_invitedMembers.end()))
+	{ // 초대되지 않은 유저.
 		Msg().errInviteOnlyChan(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
@@ -128,6 +149,8 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		removeInvitedMember(client);
 	}
 	m_members[client.getNickName()] = &client;
+	if (m_members.size() == 1)
+		addChannelOper(client);
 	client.addJoinedChannel(*this);
 
 	broadcastMsg(
@@ -294,6 +317,7 @@ bool Channel::setLimitMode( const std::string &value )
 	int limit;
 	if (!MyLibft::aToInt(value, limit))
 		return (false);
+	m_maxMembers = limit;
 	return (true);
 }
 

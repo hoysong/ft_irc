@@ -44,7 +44,7 @@ bool ChannelManager::addClientToChannel(
 		.setChannelName(channelName)
 		.assignPasswd(passwd)
 		.addMember(client, passwd);
-	m_channels.find(channelName)->second.addChannelOper(client);
+//	m_channels.find(channelName)->second.addChannelOper(client);
 	std::cout << "\tadd client to channel done." << std::endl;
 	return (true);
 }
@@ -72,11 +72,13 @@ bool ChannelManager::partClientFromChannel(
 		return (false);
 	}
 
-	if (!(iter->second.removeMember(client)))
+	if (!(iter->second.findMember(client)))
 	{
 		Msg().errNotOnChannel(client.getNickName(), iter->first).sendTo(client, m_server);
 		return (false);
 	}
+	iter->second.broadcastMsg(msg);
+	iter->second.removeMember(client);
 	if (iter->second.isChannelEmpty())
 		m_channels.erase(iter);
 	return (true);
@@ -120,8 +122,8 @@ bool ChannelManager::kickClientFromChannel(
 		return (false);
 	}
 
-	iter->second.removeMember(target);
 	iter->second.broadcastMsg(msg);
+	iter->second.removeMember(target);
 
 	return (true);
 }

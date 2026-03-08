@@ -24,6 +24,7 @@ class Msg
 		Msg & trailing( bool flag );
 		Msg & clear( void );
 		bool sendTo( Client &client, IServerController &server );
+		std::string closingLinkMsg( Client &client, const std::string &reason );
 		/*조립한 내용들을 메시지로 이어붙이기.*/
 		std::string serialize( void );
 

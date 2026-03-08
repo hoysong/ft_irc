@@ -63,6 +63,7 @@ class Channel
 		void syncNick( Client &client, const std::string &newNick);
 //		bool broadcastPrivmsg(Client &client, const std::string &msg);
 		bool broadcastMsg( const std::string &msg );
+		bool broadcastMsg( const std::string &msg, Client &exclude );
 
 		std::string getPasswd( void );
 		std::string getChannelName( void );
