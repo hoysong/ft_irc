@@ -44,6 +44,7 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 	else if (params[0] != m_passwd)
 	{
 		Msg().errPasswdMismatch(client.getNickName()).sendTo(client, *this);
+		sendMsg(client.getFd(), Msg().closingLinkMsg(client, "Bad password"));
 		addClientToRemove(client);
 		return ;
 	}
@@ -61,13 +62,30 @@ void    IRCServer::handlePass(Client& client, const paramVector& params)
 
 void    IRCServer::handleQuit(Client& client, const paramVector& params)
 {
-	client.broadcastJoinedChannels(
-			Msg()
-			.setPrefix(client.getMsgPrefix())
-			.addParam("QUIT")
-			.addParam("Disconnected from server")
-			.serialize()
-			);
+	std::string quitMsg;
+	if (params.empty())
+	{
+		client.broadcastJoinedChannels(
+				Msg()
+				.setPrefix(client.getMsgPrefix())
+				.addParam("QUIT")
+				.addParam("QUIT from server")
+				.serialize()
+				);
+		quitMsg = Msg().closingLinkMsg(client, "Quit: " + client.getNickName());
+	}
+	else
+	{
+		client.broadcastJoinedChannels(
+				Msg()
+				.setPrefix(client.getMsgPrefix())
+				.addParam("QUIT")
+				.addParam(params[0])
+				.serialize()
+				);
+		quitMsg = Msg().closingLinkMsg(client, "Quit: " + params[0]);
+	}
+	sendMsg(client.getFd(), quitMsg);
 	addClientToRemove(client);
 }
 
@@ -91,7 +109,7 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 		{ // server
 			Channel *channel;
 			if (m_channelManager.getChannel(current, channel))
-				channel->broadcastMsg(line);
+				channel->broadcastMsg(line, client);
 			else
 			{
 				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client, *this);
