@@ -101,15 +101,15 @@ void IRCServer::privmsgProcess(Client &client, std::set<std::string> targets, co
 		current = *iter;
 		std::string line = Msg()
 			.setPrefix(client.getMsgPrefix())
-			.addParam(current)
 			.addParam("PRIVMSG")
+			.addParam(current)
 			.addParam(msg)
 			.serialize();
 		if (current[0] == '#')
 		{ // server
 			Channel *channel;
 			if (m_channelManager.getChannel(current, channel))
-				channel->broadcastMsg(line);
+				channel->broadcastMsg(line, client);
 			else
 			{
 				Msg().errNoSuchChannel(client.getNickName(), current).sendTo(client, *this);
