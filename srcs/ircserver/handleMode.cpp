@@ -173,42 +173,40 @@ void IRCServer::setCliientMode(Client &client,
 		const std::string &modes,
 		std::vector<std::string> &modeTargets)
 {
+	if (!m_clientManager.isNickExists(target))
+	{ // 닉네임이 존재하지 않음.
+		Msg()
+			.setPrefix(SERVER_PREFIX)
+			.numeric(401)
+			.addParam(client.getNickName())
+			.addParam(target)
+			.addParam("No such nick")
+			.sendTo(client, *this);
+		return ;
+	}
+	else if (target != client.getNickName())
+	{ // 다른 유저를 대상으로 했음.
+		Msg()
+			.setPrefix(SERVER_PREFIX)
+			.numeric(502)
+			.addParam(client.getNickName())
+			.addParam("Cannot view/change mode for other user")
+			.sendTo(client, *this);
+		return ;
+	}
 	if (modes.empty())
-	{ // 모드 조회 요청.
-
-		if (!m_clientManager.isNickExists(target))
-		{
-			Msg()
-				.setPrefix(SERVER_PREFIX)
-				.numeric(401)
-				.addParam(client.getNickName())
-				.addParam(target)
-				.addParam("No such nick")
-				.sendTo(client, *this);
-		}
-		else if (target != client.getNickName())
-		{
-			Msg()
-				.setPrefix(SERVER_PREFIX)
-				.numeric(502)
-				.addParam(client.getNickName())
-				.addParam("Cannot change mode for other user")
-				.sendTo(client, *this);
-		}
-		else
-			{
-				std::string trailing = "+";
-				if (client.isInvisible())
-					trailing += 'i';
-				if (client.isWallopos())
-					trailing += 'w';
-				Msg()
-					.setPrefix(SERVER_PREFIX)
-					.numeric(RPL_UMODEIS)
-					.addParam(client.getNickName())
-					.addParam(trailing)
-					.sendTo(client, *this);
-			}
+	{ // 모드 조회 요청임.
+		std::string trailing = "+";
+		if (client.isInvisible())
+			trailing += 'i';
+		if (client.isWallopos())
+			trailing += 'w';
+		Msg()
+			.setPrefix(SERVER_PREFIX)
+			.numeric(RPL_UMODEIS)
+			.addParam(client.getNickName())
+			.addParam(trailing)
+			.sendTo(client, *this);
 		return ;
 	}
 
