@@ -188,9 +188,26 @@ void    IRCServer::handleNotice(Client& client, const paramVector& params)
 	if (params.size() < 2)
 		return ;
 	else if (m_channelManager.findChannel(params[0]))
-		m_channelManager.broadcastToChannel(params[0], params[1]);
+		m_channelManager.broadcastToChannel(params[0],
+				Msg()
+				.setPrefix(client.getMsgPrefix())
+				.addParam("NOTICE")
+				.addParam(params[0])
+				.addParam(params[1])
+				.serialize()
+				);
 	else if (m_clientManager.isNickExists(params[0]))
-		sendMsg(m_clientManager.getClient(params[0]).getFd(), params[1]);
+		if (!sendMsg(m_clientManager.getClient(params[0]).getFd(),
+				Msg()
+				.setPrefix(client.getMsgPrefix())
+				.addParam("NOTICE")
+				.addParam(params[0])
+				.addParam(params[1])
+				.serialize()
+				))
+		{
+			addClientToRemove(client);
+		}
 }
 
 // ==============================================================================
