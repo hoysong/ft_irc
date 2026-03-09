@@ -43,6 +43,11 @@ int	main(int argc, char **argv)
 		startErrMsg();
 		return (1);
 	}
+	else if (std::string(argv[1]).empty() || std::string(argv[2]).empty())
+	{
+		startErrMsg();
+		return (1);
+	}
 	else if (!MyLibft::aToInt(argv[1], port))
 	{
 		startErrMsg();
