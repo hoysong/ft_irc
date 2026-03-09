@@ -185,17 +185,19 @@ void    IRCServer::handlePrivmsg(Client& client, const paramVector& params)
 
 void    IRCServer::handleNotice(Client& client, const paramVector& params)
 { /*기본 무응답.*/
+	Channel *channel;
 	if (params.size() < 2)
 		return ;
-	else if (m_channelManager.findChannel(params[0]))
-		m_channelManager.broadcastToChannel(params[0],
-				Msg()
+	else if (m_channelManager.getChannel(params[0], channel))
+	{
+		channel->broadcastMsg(Msg()
 				.setPrefix(client.getMsgPrefix())
 				.addParam("NOTICE")
 				.addParam(params[0])
 				.addParam(params[1])
 				.serialize()
-				);
+				,client);
+	}
 	else if (m_clientManager.isNickExists(params[0]))
 		if (!sendMsg(m_clientManager.getClient(params[0]).getFd(),
 				Msg()

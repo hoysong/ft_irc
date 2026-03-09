@@ -122,7 +122,7 @@ void IRCServer::setChannelMode(Client &client,
 				}
 				else if (channel->isChannelOper(*iter) && remove)
 				{
-					channel->addChannelOper(*iter);
+					channel->removeChannelOper(*iter);
 					trailingBuffer += "o";
 					params.push_back(*iter);
 				}
