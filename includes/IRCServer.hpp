@@ -91,8 +91,7 @@ class IRCServer : public IServerController
 					std::vector<std::string> &modeTargets);
 			void setCliientMode(Client &client,
 					const std::string &target,
-					const std::string &modes,
-					std::vector<std::string> &modeTargets);
+					const std::string &modes);
 
 
 		// 4. 서버 및 유저 정보 (Server Queries & User Info)

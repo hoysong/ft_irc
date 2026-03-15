@@ -133,7 +133,7 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
-	if (m_maxMembers <= m_members.size())
+	if (m_maxMembers <= static_cast<int>(m_members.size()))
 	{
 		Msg().errChannelIsFull(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);

@@ -1,5 +1,5 @@
 #include "IRCServer.hpp"
-#include "modeMask.hpp"
+//#include "modeMask.hpp"
 #include "Msg.hpp"
 #include <iostream>
 
@@ -15,35 +15,35 @@ static std::string getUserName( const std::string &str )
 	return (buffer);
 }
 
-static bool isNumeric( const std::string &str )
-{
-	for (size_t i = 0; str[i] != '\0'; i++)
-	{
-		if ( !std::isdigit(str[i]) )
-			return (false);
-	}
-	return (true);
-}
+//static bool isNumeric( const std::string &str )
+//{
+//	for (size_t i = 0; str[i] != '\0'; i++)
+//	{
+//		if ( !std::isdigit(str[i]) )
+//			return (false);
+//	}
+//	return (true);
+//}
 
-static void setUserMode( Client &client, const std::string &str )
-{
-	unsigned int mode = 0;
-	if (isNumeric(str))
-	{
-		mode = *(const_cast<std::string &>(str).rbegin()) - '0';
-		std::cout << mode << std::endl;
-	}
-
-	if (hasMode(mode, UMODE_INVISIBLE))
-		client.setInvisible(true);
-	else
-		client.setInvisible(false);
-
-	if (hasMode(mode, UMODE_WALLOPS))
-		client.setWallops(false);
-	else
-		client.setWallops(false);
-}
+//static void setUserMode( Client &client, const std::string &str )
+//{
+//	unsigned int mode = 0;
+//	if (isNumeric(str))
+//	{
+//		mode = *(const_cast<std::string &>(str).rbegin()) - '0';
+//		std::cout << mode << std::endl;
+//	}
+//
+//	if (hasMode(mode, UMODE_INVISIBLE))
+//		client.setInvisible(true);
+//	else
+//		client.setInvisible(false);
+//
+//	if (hasMode(mode, UMODE_WALLOPS))
+//		client.setWallops(false);
+//	else
+//		client.setWallops(false);
+//}
 
 void    IRCServer::handleUser(Client& client, const paramVector& params)
 {

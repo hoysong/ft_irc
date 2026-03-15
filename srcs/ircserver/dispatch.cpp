@@ -373,6 +373,6 @@ void    IRCServer::handlePing(Client& client, const paramVector& params)
 		.sendTo(client, *this);
 }
 
-void    IRCServer::handlePong(Client& client, const paramVector& params)
+void    IRCServer::handlePong(Client& , const paramVector& )
 {
 }
