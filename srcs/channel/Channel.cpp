@@ -3,7 +3,6 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "MyLibft.hpp"
-#include "ircError.hpp"
 #include <iostream>
 #include <map>
 #include <set>

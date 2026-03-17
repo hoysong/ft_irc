@@ -15,36 +15,6 @@ static std::string getUserName( const std::string &str )
 	return (buffer);
 }
 
-//static bool isNumeric( const std::string &str )
-//{
-//	for (size_t i = 0; str[i] != '\0'; i++)
-//	{
-//		if ( !std::isdigit(str[i]) )
-//			return (false);
-//	}
-//	return (true);
-//}
-
-//static void setUserMode( Client &client, const std::string &str )
-//{
-//	unsigned int mode = 0;
-//	if (isNumeric(str))
-//	{
-//		mode = *(const_cast<std::string &>(str).rbegin()) - '0';
-//		std::cout << mode << std::endl;
-//	}
-//
-//	if (hasMode(mode, UMODE_INVISIBLE))
-//		client.setInvisible(true);
-//	else
-//		client.setInvisible(false);
-//
-//	if (hasMode(mode, UMODE_WALLOPS))
-//		client.setWallops(false);
-//	else
-//		client.setWallops(false);
-//}
-
 void    IRCServer::handleUser(Client& client, const paramVector& params)
 {
 	if (client.isRegistered())
@@ -67,7 +37,6 @@ void    IRCServer::handleUser(Client& client, const paramVector& params)
 		client.setUserName( "unknownUserName" );
 	else
 		client.setUserName(userName);
-	//setUserMode(client, params[1]);
 	client.setRealName(params[3]);
 
 	std::cout << "nickname: " << client.getNickName() << std::endl;

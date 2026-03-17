@@ -211,8 +211,6 @@ void IRCServer::setCliientMode(Client &client,
 
 	bool add = false;
 	bool remove = false;
-//	std::vector<std::string>::iterator iter = modeTargets.begin();
-//	std::vector<std::string>::iterator iter_end = modeTargets.end();
 	std::string trailingBuffer;
 	for(size_t i = 0; modes[i] != '\0'; i++)
 	{
