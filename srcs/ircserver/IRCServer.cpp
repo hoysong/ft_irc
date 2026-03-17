@@ -41,22 +41,6 @@ static void setQuitSignal(void)
 // loop logics.
 // =========================================================================
 
-#include <sys/socket.h>
-#include <sys/time.h>
-
-static bool setSendTimeOut( int fd )
-{
-	struct timeval	timeout;
-	
-	timeout.tv_sec = 3;
-	timeout.tv_usec = 0;
-	
-	if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout)) < 0)
-		return (false);
-	return (true);
-}
-
-
 void IRCServer::acceptLogics( void )
 {
 	std::cout << "[IRCServer::acceptLogics()]" << std::endl;
@@ -152,7 +136,6 @@ void IRCServer::syncDisconnect( Client &client )
 
 	/* 마지막으로 서버에서 삭제. */
 	m_clientManager.removeClient(client.getFd());
-//	m_channelManager.eraseAllEmptyChannels();
 }
 
 void IRCServer::softDisconnect( Client &client )
@@ -249,7 +232,6 @@ IRCServer::IRCServer(std::string ip, int port, std::string passwd) :
 	m_commands["NICK"]    = &IRCServer::handleNick;
 	m_commands["USER"]    = &IRCServer::handleUser;
 	m_commands["QUIT"]    = &IRCServer::handleQuit;
-//	m_commands["OPER"]    = &IRCServer::handleOper;
 
 	// 2. 메시지 전송 (Message Sending)
 	m_commands["PRIVMSG"] = &IRCServer::handlePrivmsg;
@@ -259,21 +241,11 @@ IRCServer::IRCServer(std::string ip, int port, std::string passwd) :
 	m_commands["JOIN"]    = &IRCServer::handleJoin;
 	m_commands["PART"]    = &IRCServer::handlePart;
 	m_commands["TOPIC"]   = &IRCServer::handleTopic;
-//	m_commands["NAMES"]   = &IRCServer::handleNames;
-//	m_commands["LIST"]    = &IRCServer::handleList;
 	m_commands["INVITE"]  = &IRCServer::handleInvite;
 	m_commands["KICK"]    = &IRCServer::handleKick;
 	m_commands["MODE"]    = &IRCServer::handleMode;
 
 	// 4. 서버 및 유저 정보 (IRCServer Queries & User Info)
-//	m_commands["WHO"]     = &IRCServer::handleWho;
-//	m_commands["WHOIS"]   = &IRCServer::handleWhois;
-//	m_commands["WHOWAS"]  = &IRCServer::handleWhowas;
 	m_commands["PING"]    = &IRCServer::handlePing;
 	m_commands["PONG"]    = &IRCServer::handlePong;
-
-	// 5. 기타 편의/보너스 (Miscellaneous / Optional)
-//	m_commands["CAP"]     = &IRCServer::handleCap;     // irssi 접속 대응
-//	m_commands["AWAY"]    = &IRCServer::handleAway;
-//	m_commands["KILL"]    = &IRCServer::handleKill;    // Oper 전용 강퇴
 }

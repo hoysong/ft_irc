@@ -10,7 +10,7 @@ void IRCServer::welcomeMsg( Client &client )
 	msg += "\r\n";
 	msg += ":" + m_serverName + " 003 " + client.getNickName() + " :This server was created " + m_startStamp;
 	msg += "\r\n";
-	msg += ":" + m_serverName + " 004 " + client.getNickName() + " " + m_serverName + " " + m_version + " iw" + " itkol";
+	msg += ":" + m_serverName + " 004 " + client.getNickName() + " " + m_serverName + " " + m_version + " i" + " itkol";
 	msg += "\r\n";
 	sendMsg(client.getFd(), msg);
 	msg.clear();

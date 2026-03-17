@@ -170,8 +170,7 @@ void IRCServer::setChannelMode(Client &client,
 
 void IRCServer::setCliientMode(Client &client,
 		const std::string &target,
-		const std::string &modes,
-		std::vector<std::string> &modeTargets)
+		const std::string &modes)
 {
 	if (!m_clientManager.isNickExists(target))
 	{ // 닉네임이 존재하지 않음.
@@ -212,8 +211,6 @@ void IRCServer::setCliientMode(Client &client,
 
 	bool add = false;
 	bool remove = false;
-	std::vector<std::string>::iterator iter = modeTargets.begin();
-	std::vector<std::string>::iterator iter_end = modeTargets.end();
 	std::string trailingBuffer;
 	for(size_t i = 0; modes[i] != '\0'; i++)
 	{
@@ -276,7 +273,7 @@ void IRCServer::modeProcess(Client &client,
 	}
 	else
 	{ // 유저모드
-		setCliientMode(client, target, modes, modeTargets);
+		setCliientMode(client, target, modes);
 	}
 }
 

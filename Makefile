@@ -16,8 +16,8 @@ END = ]\e[0m"
 MSG = @echo $(GRN)
 
 CXX = c++
-#CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./includes -fsanitize=address
-CXXFLAGS = -g -std=c++98 -I./includes -fsanitize=address
+CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./includes -fsanitize=address
+#CXXFLAGS = -g -std=c++98 -I./includes -fsanitize=address
 #CXXFLAGS = -g -std=c++98 -I./includes
 OBJS = $(SRCS:.cpp=.o)
 

@@ -94,7 +94,7 @@ bool Msg::sendTo( Client &client, IServerController &server )
 	return true;
 }
 /*constructor*/
-Msg::Msg( void ) : m_trailing(true), m_numeric(-1) { }
+Msg::Msg( void ) : m_numeric(-1), m_trailing(true) { }
 
 // =========================================================================================
 // 미리 지정된 함수들.
