@@ -11,7 +11,7 @@ class Channel;
 class Client
 {
 	private:
-		IServerController &m_server;
+//		IServerController &m_server;
 		const int m_fd;
 		std::string m_buffer;
 		void appendBuffer( char *buffer, ssize_t size );
