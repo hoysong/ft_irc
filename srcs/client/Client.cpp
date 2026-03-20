@@ -247,8 +247,8 @@ void Client::removeInvitedChannel ( Channel &channel )
 /***************************/
 /* constcurtor/destructor. */
 /***************************/
-Client::Client( int fd , IServerController &ircServer ) :
-	m_server(ircServer),
+Client::Client( int fd , IServerController & ) :
+//	m_server(ircServer),
 	m_fd(fd),
 	m_authed(false),
 	m_registered(false),
