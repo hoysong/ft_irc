@@ -132,8 +132,8 @@ bool Channel::addMember( Client &client, const std::string &passwd )
 		Msg().errBadChannelKey(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
-	if (m_maxMembers <= static_cast<int>(m_members.size()))
-	{
+	if (m_maxMembers >= 0 && m_maxMembers <= static_cast<int>(m_members.size()))
+	{ // maxMembers가 활성과고.. 현재 멤버 사이즈보다 같거나 크다면? 무시.
 		Msg().errChannelIsFull(client.getNickName(), m_channelName).sendTo(client, m_server);
 		return (false);
 	}
