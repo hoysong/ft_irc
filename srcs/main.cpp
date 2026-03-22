@@ -13,6 +13,9 @@
 static void startErrMsg( void )
 {
 	std::cerr << "서버 구동: ./ircserv [port] [passwd]" << std::endl;
+	std::cout << "[port]를 구성할 수 있는 문자들은 다음과 같습니다." << std::endl;
+	std::cout << "├─ 0 ~ 9" << std::endl;
+	std::cout << "└─ bound: 1024 ~ 49151" << std::endl;
 	std::cout << "[passwd]를 구성할 수 있는 문자들은 다음과 같습니다." << std::endl;
 	std::cout << "├─ A ~ Z" << std::endl;
 	std::cout << "├─ a ~ z" << std::endl;
@@ -50,6 +53,11 @@ int	main(int argc, char **argv)
 	}
 	else if (!MyLibft::aToInt(argv[1], port))
 	{
+		startErrMsg();
+		return (1);
+	}
+	else if ( !(port >= 1024 && port <= 49151) )
+	{ // 안정적인 포트 범위 내로 입력이 되었는지 체크.
 		startErrMsg();
 		return (1);
 	}

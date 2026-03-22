@@ -68,7 +68,7 @@ bool ChannelManager::partClientFromChannel(
 	chanMap::iterator iter = m_channels.find(channelName);
 	if (iter == m_channels.end())
 	{
-		Msg().errNoSuchChannel(client.getNickName(), iter->first).sendTo(client, m_server);
+		Msg().errNoSuchChannel(client.getNickName(), channelName).sendTo(client, m_server);
 		return (false);
 	}
 
