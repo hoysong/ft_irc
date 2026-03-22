@@ -316,6 +316,8 @@ bool Channel::setLimitMode( const std::string &value )
 	int limit;
 	if (!MyLibft::aToInt(value, limit))
 		return (false);
+	if (limit < 0)
+		return (false);
 	m_maxMembers = limit;
 	return (true);
 }
