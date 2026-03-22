@@ -6,6 +6,22 @@ typedef std::vector<std::string> strVect;
 
 extern void splitMultiTarget(std::string str , strVect &vect);
 
+static bool nameVldChk( std::string &str )
+{
+	if (str.length() > 50)
+		return (false);
+	else if (str[0] != '#')
+		return (false);
+	else if (str.length() == 1)
+		return (false);
+	for(std::string::iterator iter = str.begin(); iter != str.end(); iter++)
+	{
+		if ( *iter == '\r' || *iter == ' ' || *iter == 7 || *iter == '\0' || *iter == '\n' || *iter == ':' || *iter == ',' )
+			return (false);
+	}
+	return (true);
+}
+
 void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &keys)
 {
 	paramVector::iterator servIter = servers.begin();
@@ -13,7 +29,7 @@ void IRCServer::joinProcess(Client &client, paramVector &servers, paramVector &k
 
 	while (servIter != servers.end())
 	{
-		if ((*servIter)[0] != '#' || servIter->size() == 1)
+		if (!nameVldChk(*servIter))
 			Msg()
 				.setPrefix(SERVER_PREFIX)
 				.numeric(ERR_NOSUCHCHANNEL)

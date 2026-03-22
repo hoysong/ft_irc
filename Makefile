@@ -16,9 +16,8 @@ END = ]\e[0m"
 MSG = @echo $(GRN)
 
 CXX = c++
-CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./includes -fsanitize=address
-#CXXFLAGS = -g -std=c++98 -I./includes -fsanitize=address
-#CXXFLAGS = -g -std=c++98 -I./includes
+#CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./includes -fsanitize=address
+CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I./includes
 OBJS = $(SRCS:.cpp=.o)
 
 NAME = ircserv
@@ -27,8 +26,8 @@ all : $(NAME)
 
 $(NAME) : $(OBJS)
 	$(MSG)making $(NAME)📂$(END)
-	$(CXX) -fsanitize=address -o $(NAME) $(OBJS)
-#	$(CXX) -o $(NAME) $(OBJS)
+#	$(CXX) -fsanitize=address -o $(NAME) $(OBJS)
+	$(CXX) -o $(NAME) $(OBJS)
 	$(MSG)make done✔$(END)
 
 clean :
