@@ -1,5 +1,7 @@
 *This project has been created as part of the 42 curriculum by ahrelee, hoysong, jinyjeon.*
 
+![image.png]
+
 # Description
 
 ft_irc is a lightweight IRC (Internet Relay Chat) server written in C++98 as part of the 42 common core curriculum. The goal of the project is to build a fully functional IRC server from scratch, capable of handling multiple simultaneous client connections using non-blocking I/O and a single `poll()` system call.
