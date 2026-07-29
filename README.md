@@ -1,6 +1,6 @@
 *This project has been created as part of the 42 curriculum by ahrelee, hoysong, jinyjeon.*
 
-![image.png]
+![image.png](https://github.com/hoysong/ft_irc/blob/main/image.png)
 
 # Description
 
