@@ -1,66 +1,48 @@
-*This project has been created as part of the 42 curriculum by ahrelee, hoysong, jinyjeon.*
+*This project was created by hoysong as part of the 42 common core curriculum.*
 
-![image.png](https://github.com/hoysong/ft_irc/blob/main/image.png)
+[English](./README.md) | [한국어](./README.ko.md)
 
-# Description
+![ft_irc](./image.png)
 
-ft_irc is a lightweight IRC (Internet Relay Chat) server written in C++98 as part of the 42 common core curriculum. The goal of the project is to build a fully functional IRC server from scratch, capable of handling multiple simultaneous client connections using non-blocking I/O and a single `poll()` system call.
+# 1. Project Overview
 
-The server implements a hybrid subset of the IRC protocol based on both **RFC 1459** and **RFC 2812**, supporting essential features such as user authentication, nickname and username registration, channel management, private messaging, and operator privileges. It is designed to work with real-world IRC clients such as **irssi**, **HexChat**, or **WeeChat**, as well as basic tools like **netcat** (`nc`) or **telnet**.
+ft_irc is a lightweight IRC (Internet Relay Chat) server written in C++98 as part of the 42 common core curriculum. The goal of the project is to build a fully functional IRC server from scratch that handles multiple simultaneous client connections through an `epoll`-based event loop.
 
-No server-to-server communication is implemented. The project focuses exclusively on the client-server relationship as defined in the RFC specifications.
+The server implements a hybrid subset of the IRC protocol based on **RFC 1459** and **RFC 2812**. It supports essential features such as user authentication, nickname and username registration, channel management, private messaging, and operator privileges. **irssi** is the reference client, while basic tools such as **netcat** (`nc`) and **telnet** can also connect to the server.
 
-# Features
+Server-to-server communication is not implemented. The project focuses exclusively on the client-server relationship defined by the RFC specifications.
 
-## Connection & Registration
-- **PASS** — Set a connection password before registration
-- **NICK** — Set or change a user's nickname
-- **USER** — Set the username and realname during registration
+# 2. Features
 
-## Messaging
-- **PRIVMSG** — Send a message to a user or a channel
-- **NOTICE** — Send a notice to a user or a channel (no automatic replies)
+See the [IRC Command Guide](./docs/COMMANDS.md) for a complete feature overview and detailed usage of each command.
 
-## Channel Operations
-- **JOIN** — Join one or more channels
-- **PART** — Leave one or more channels
-- **TOPIC** — View or change the topic of a channel
-- **INVITE** — Invite a user to a channel
-- **KICK** — Remove a user from a channel
+# 3. Technical Characteristics and Constraints
 
-## Channel Modes (MODE)
-The following channel modes are supported via the `MODE` command:
-
-| Mode | Parameter | Description                            |
-| ---- | --------- | -------------------------------------- |
-| `i`  | None      | Set/remove invite-only channel         |
-| `t`  | None      | Restrict TOPIC changes to operators    |
-| `k`  | `<key>`   | Set/remove a channel key (password)    |
-| `o`  | `<nick>`  | Give/take channel operator privilege   |
-| `l`  | `mit>`    | Set/remove a user limit on the channel |
-
-## Server Utilities
-- **PING** — Keep the connection alive
-- **QUIT** — Disconnect from the server
-
-## Technical Constraints
 - Written in **C++98**
-- Handles multiple clients simultaneously without hanging
-- All I/O operations are **non-blocking**
-- Uses a **single `poll()`** for all I/O multiplexing
-- Communication via **TCP/IP (IPv4)**
-- No forking
+- Handles multiple clients simultaneously
+- Uses a **single `epoll` instance** for all I/O multiplexing
+- Communicates over **TCP/IP (IPv4)**
+- Does not fork
+- Uses **irssi** as the reference client implementation; interaction with other IRC clients is not guaranteed
 
-# Instructions
+# 4. Usage
 
-## Prerequisites
+## 4.1. Prerequisites
 
-- A C++ compiler with C++98 support (e.g., `c++`, `g++`, `clang++`)
+### 4.1.1. Build and Runtime Environment
+
+- A **Linux** environment with `epoll` support
+- A C++ compiler with C++98 support (e.g. `c++`, `g++`, or `clang++`)
 - GNU Make
 
-## Building
+### 4.1.2. Connection and Testing Tools
 
-Clone the repository and compile:
+- **irssi** — Required to connect and verify behavior with the reference client
+- **netcat** (`nc`) — Optional tool for sending raw IRC commands
+
+## 4.2. Building
+
+Clone the repository and compile the project:
 
 ```bash
 git clone <repository-url>
@@ -75,16 +57,16 @@ Other Make targets:
 | `make`        | Compile the project and produce the `ircserv` executable |
 | `make clean`  | Remove object files                                      |
 | `make fclean` | Remove object files and the executable                   |
-| `make re`     | Run `fclean` followed by `make`                          |
+| `make re`     | Run `fclean`, then run `make`                            |
 
-## Running the Server
+## 4.3. Running the Server
 
 ```bash
 ./ircserv <port> <password>
 ```
 
-- `<port>` — The port number on which the server listens for incoming connections
-- `<password>` — The connection password that clients must provide
+- `<port>` — Port on which the server listens for incoming client connections
+- `<password>` — Connection password that clients must provide
 
 **Example:**
 
@@ -92,45 +74,73 @@ Other Make targets:
 ./ircserv 6667 mypassword
 ```
 
-## Connecting with an IRC Client (irssi)
+## 4.4. Connecting with the IRC Client (irssi)
 
-```
+### 4.4.1. Method 1
+
+1. Start irssi:
+
+```bash
 irssi
+```
+
+2. Enter the following command in irssi:
+
+```irssi
 /connect 127.0.0.1 6667 mypassword
 ```
 
-## Connecting with Netcat
+### 4.4.2. Method 2
+
+Start irssi with connection options:
+
+```bash
+irssi -c 127.0.0.1 -p 6667 -n mynick --password="mypasswd"
+```
+
+## 4.5. Connecting with Netcat
+
+1. Start netcat in a terminal:
 
 ```bash
 nc -C 127.0.0.1 6667
 ```
 
-Then authenticate manually:
+2. Authenticate manually:
 
-```
+```text
 PASS mypassword
 NICK mynick
 USER myuser 0 * :My Real Name
 ```
 
-> **Note:** The `-C` flag is used because IRC messages are terminated with `\r\n` as defined in the RFC standards.
+> **Note:** The `-C` option is used because IRC messages end with `\r\n` as defined by the RFC specifications.
 
-# Resources
+## 4.6. Notes for Trying the Project
 
-## References
+- Commands listed in the [Feature Overview](./docs/COMMANDS.md#1-feature-overview) are case-insensitive.
+
+- Commands other than registration commands are rejected until the [Connection and Registration](./docs/COMMANDS.md#21-connection-and-registration) process is complete.
+
+- [netcat](#45-connecting-with-netcat) and [irssi](#44-connecting-with-the-irc-client-irssi) are different programs. irssi provides its own client-side commands, which may not be available in netcat.
+
+# 5. Resources
+
+## 5.1. References
 
 - [RFC 1459 — Internet Relay Chat Protocol](https://datatracker.ietf.org/doc/html/rfc1459)
 - [RFC 2812 — Internet Relay Chat: Client Protocol](https://datatracker.ietf.org/doc/html/rfc2812)
 - [Modern IRC Client Protocol Documentation](https://modern.ircdocs.horse)
 - [IRC/2 Numeric List](https://www.alien.net.au/irc/irc2numerics.html)
 
-## AI Usage
+## 5.2. AI Usage
 
 AI tools were used during the development of this project in the following areas:
 
-- **RFC interpretation** — Clarifying ambiguous sections of RFC 1459 and RFC 2812, particularly around edge cases in command parsing and expected server behavior
-- **Error code and response mapping** — Identifying the correct numeric replies for each command and organizing per-command error/response tables
+- **RFC interpretation** — Clarifying ambiguous sections of RFC 1459 and RFC 2812, particularly edge cases in command parsing and expected server behavior
+- **Error code and response mapping** — Identifying the correct numeric replies for each command and organizing per-command error and response tables
 - **README authoring** — Assisting with the structure and writing of this document
-- **Code review ideation** — Generating suggestions for code review and identifying potential issues in protocol handling logic
-- **Repetitive refactoring** — Delegating mechanical refactoring tasks such as updating all call sites after function signature changes
+- **Code review ideation** — Generating code review suggestions and identifying potential issues in protocol-handling logic
+- **Repetitive refactoring** — Handling mechanical refactoring tasks such as updating all call sites after function signature changes
+
 ---
